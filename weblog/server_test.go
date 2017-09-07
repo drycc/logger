@@ -33,7 +33,7 @@ func newTestStorageAdapter(t *testing.T) storage.Adapter {
 }
 
 func TestServerStart(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deis/logger/issues/120")
+	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()
@@ -64,7 +64,7 @@ func TestServerStart(t *testing.T) {
 }
 
 func TestServerClose(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deis/logger/issues/120")
+	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()
@@ -85,7 +85,7 @@ func TestServerClose(t *testing.T) {
 }
 
 func TestServerURL(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deis/logger/issues/120")
+	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()

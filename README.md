@@ -1,22 +1,24 @@
 
-# Deis Logger
+# Hephy Logger
 [![Build Status](https://ci.deis.io/job/logger/badge/icon)](https://ci.deis.io/job/logger)
 [![codecov.io](https://codecov.io/github/deis/logger/coverage.svg?branch=master)](https://codecov.io/github/deis/logger?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/deis/logger)](https://goreportcard.com/report/github.com/deis/logger)
 [![Docker Repository on Quay](https://quay.io/repository/deis/logger/status "Docker Repository on Quay")](https://quay.io/repository/deis/logger)
 
+Hephy - A Fork of Deis Workflow
+
 Deis (pronounced DAY-iss) Workflow is an open source Platform as a Service (PaaS) that adds a developer-friendly layer to any [Kubernetes](http://kubernetes.io) cluster, making it easy to deploy and manage applications on your own servers.
 
 ![Deis Graphic](https://getdeis.blob.core.windows.net/get-deis/deis-graphic-small.png)
 
-For more information about the Deis Workflow, please visit the main project page at https://github.com/deisthree/workflow.
+For more information about the Deis Workflow, please visit the main project page at https://github.com/teamhephy/workflow.
 
 We welcome your input! If you have feedback, please [submit an issue][issues]. If you'd like to participate in development, please read the "Development" section below and [submit a pull request][prs].
 
 ## Description
 A system logger for use in the [Deis Workflow](https://deis.com/workflow/) open source PaaS.
 
-This Docker image is based on [quay.io/deis/base](https://github.com/deisthree/docker-base) image. You can see what version we are currently using in the [Dockerfile](rootfs/Dockerfile)
+This Docker image is based on [quay.io/deis/base](https://github.com/teamhephy/docker-base) image. You can see what version we are currently using in the [Dockerfile](rootfs/Dockerfile)
 
 The new v2 logger implementation has seen a simplification from the last rewrite. While it still uses much of that code it no longer depends on `etcd`. Instead, we will use kubernetes service discovery to determine where logger is running.
 
@@ -100,6 +102,6 @@ DEV_REGISTRY=myhost:5000 make push
                        └──────────┘
 ```
 
-[issues]: https://github.com/deisthree/logger/issues
-[prs]: https://github.com/deisthree/logger/pulls
-[v2.18]: https://github.com/deisthree/workflow/releases/tag/v2.18.0
+[issues]: https://github.com/teamhephy/logger/issues
+[prs]: https://github.com/teamhephy/logger/pulls
+[v2.18]: https://github.com/teamhephy/workflow/releases/tag/v2.18.0

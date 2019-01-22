@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: drycc-logger
-        image: quay.io/{{.Values.org}}/logger:{{.Values.docker_tag}}
+        image: {{.Values.docker_registry}}{{.Values.org}}/logger:{{.Values.docker_tag}}
         imagePullPolicy: {{.Values.pull_policy}}
         env:
         - name: STORAGE_ADAPTER

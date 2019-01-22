@@ -3,7 +3,7 @@ package log
 import (
 	"fmt"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 )
 
 // NewAggregator returns a pointer to an appropriate implementation of the Aggregator interface, as

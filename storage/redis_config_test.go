@@ -9,18 +9,18 @@ import (
 )
 
 func TestParseConfig(t *testing.T) {
-	host := os.Getenv("DEIS_LOGGER_REDIS_SERVICE_HOST")
-	password := os.Getenv("DEIS_LOGGER_REDIS_PASSWORD")
-	db := os.Getenv("DEIS_LOGGER_REDIS_DB")
-	pipelineLength := os.Getenv("DEIS_LOGGER_REDIS_PIPELINE_LENGTH")
-	pipelineTimeoutSeconds := os.Getenv("DEIS_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS")
+	host := os.Getenv("DRYCC_LOGGER_REDIS_SERVICE_HOST")
+	password := os.Getenv("DRYCC_LOGGER_REDIS_PASSWORD")
+	db := os.Getenv("DRYCC_LOGGER_REDIS_DB")
+	pipelineLength := os.Getenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH")
+	pipelineTimeoutSeconds := os.Getenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS")
 
-	os.Setenv("DEIS_LOGGER_REDIS_PASSWORD", "password")
-	os.Setenv("DEIS_LOGGER_REDIS_DB", "2")
-	os.Setenv("DEIS_LOGGER_REDIS_PIPELINE_LENGTH", "1")
-	os.Setenv("DEIS_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", "2")
+	os.Setenv("DRYCC_LOGGER_REDIS_PASSWORD", "password")
+	os.Setenv("DRYCC_LOGGER_REDIS_DB", "2")
+	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH", "1")
+	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", "2")
 
-	p, err := strconv.Atoi(os.Getenv("DEIS_LOGGER_REDIS_SERVICE_PORT"))
+	p, err := strconv.Atoi(os.Getenv("DRYCC_LOGGER_REDIS_SERVICE_PORT"))
 	assert.NoError(t, err)
 
 	c, err := parseConfig("foo")
@@ -31,8 +31,8 @@ func TestParseConfig(t *testing.T) {
 	assert.Equal(t, c.PipelineLength, 1)
 	assert.Equal(t, c.PipelineTimeoutSeconds, 2)
 
-	os.Setenv("DEIS_LOGGER_REDIS_PASSWORD", password)
-	os.Setenv("DEIS_LOGGER_REDIS_DB", db)
-	os.Setenv("DEIS_LOGGER_REDIS_PIPELINE_LENGTH", pipelineLength)
-	os.Setenv("DEIS_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", pipelineTimeoutSeconds)
+	os.Setenv("DRYCC_LOGGER_REDIS_PASSWORD", password)
+	os.Setenv("DRYCC_LOGGER_REDIS_DB", db)
+	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH", pipelineLength)
+	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", pipelineTimeoutSeconds)
 }

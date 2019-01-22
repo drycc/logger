@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 )
 
 // TODO(bacongobbler): stop relying that port 6666 is not in use
-var testBindAddr string = "127.0.0.1:6666"
+var testBindAddr = "127.0.0.1:6666"
 
 // testListener provides a net.Listener for testing, panicking if it cannot listen on that
 // address.
@@ -33,7 +33,7 @@ func newTestStorageAdapter(t *testing.T) storage.Adapter {
 }
 
 func TestServerStart(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
+	t.Skip("skipping because of https://github.com/drycc/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()
@@ -64,7 +64,7 @@ func TestServerStart(t *testing.T) {
 }
 
 func TestServerClose(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
+	t.Skip("skipping because of https://github.com/drycc/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()
@@ -85,7 +85,7 @@ func TestServerClose(t *testing.T) {
 }
 
 func TestServerURL(t *testing.T) {
-	t.Skip("skipping because of https://github.com/deisthree/logger/issues/120")
+	t.Skip("skipping because of https://github.com/drycc/logger/issues/120")
 	storageAdapter := newTestStorageAdapter(t)
 	storageAdapter.Start()
 	defer storageAdapter.Stop()

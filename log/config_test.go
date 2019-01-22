@@ -30,12 +30,12 @@ func TestParseConfig(t *testing.T) {
 	os.Setenv("NSQ_HANDLER_COUNT", "3")
 	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", "2")
 
-	port, err := strconv.Atoi(os.Getenv("DEIS_NSQD_SERVICE_PORT_TRANSPORT"))
+	port, err := strconv.Atoi(os.Getenv("DRYCC_NSQD_SERVICE_PORT_TRANSPORT"))
 	assert.NoError(t, err)
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, c.NSQHost, os.Getenv("DEIS_NSQD_SERVICE_HOST"))
+	assert.Equal(t, c.NSQHost, os.Getenv("DRYCC_NSQD_SERVICE_HOST"))
 	assert.Equal(t, c.NSQPort, port)
 	assert.Equal(t, c.NSQTopic, "topic")
 	assert.Equal(t, c.NSQChannel, "channel")

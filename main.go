@@ -6,9 +6,9 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/deis/logger/log"
-	"github.com/deis/logger/storage"
-	"github.com/deis/logger/weblog"
+	"github.com/drycc/logger/log"
+	"github.com/drycc/logger/storage"
+	"github.com/drycc/logger/weblog"
 )
 
 func main() {

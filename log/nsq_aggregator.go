@@ -7,7 +7,7 @@ import (
 
 	nsq "github.com/nsqio/go-nsq"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 )
 
 type nsqAggregator struct {

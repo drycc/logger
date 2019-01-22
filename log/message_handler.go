@@ -6,13 +6,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 )
 
 const (
 	podPattern              = `(\w.*)-(\w.*)-(\w.*)-(\w.*)`
 	controllerPattern       = `^(INFO|WARN|DEBUG|ERROR)\s+(\[(\S+)\])+:(.*)`
-	controllerContainerName = "deis-controller"
+	controllerContainerName = "drycc-controller"
 	timeFormat              = "2006-01-02T15:04:05-07:00"
 )
 
@@ -46,7 +46,7 @@ func getApplicationFromControllerMessage(message *Message) string {
 
 func buildControllerLogMessage(message *Message) string {
 	l := controllerRegex.FindStringSubmatch(message.Log)
-	return fmt.Sprintf("%s deis[controller]: %s %s",
+	return fmt.Sprintf("%s drycc[controller]: %s %s",
 		message.Time.Format(timeFormat),
 		l[1],
 		strings.Trim(l[4], " "))

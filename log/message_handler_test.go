@@ -4,22 +4,22 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	validControllerMessage = `{"log": "INFO [foo]: admin deployed 2fd9226", "time": "2016-10-18T20:29:38+00:00", "stream": "stderr", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "deis-controller", "labels": {"app": "foo",
-"heritage": "deis", "type": "web", "version": "v2"}, "host": "host"}}`
+	validControllerMessage = `{"log": "INFO [foo]: admin deployed 2fd9226", "time": "2016-10-18T20:29:38+00:00", "stream": "stderr", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "drycc-controller", "labels": {"app": "foo",
+"heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
-	invalidControllerMessage = `{"log": "INFO: admin deployed 2fd9226", "stream": "stderr", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "deis-controller", "labels": {"app": "foo",
-"heritage": "deis", "type": "web", "version": "v2"}, "host": "host"}}`
+	invalidControllerMessage = `{"log": "INFO: admin deployed 2fd9226", "stream": "stderr", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "drycc-controller", "labels": {"app": "foo",
+"heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
 	validAppMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952-nzf60", "container_name": "foo-web", "labels": {"app": "foo",
-"heritage": "deis", "type": "web", "version": "v2"}, "host": "host"}}`
+"heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
 	badPodNameMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952", "container_name": "foo-web", "labels": {"app": "foo",
-"heritage": "deis", "type": "web", "version": "v2"}, "host": "host"}}`
+"heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
 	badjson = `{"log":}`
 )
@@ -52,7 +52,7 @@ func TestBuildControllerLogMessageFromValidMessage(t *testing.T) {
 	assert.NoError(t, err, "error occured parsing log message")
 	expected := buildControllerLogMessage(message)
 	assert.Equal(t, expected,
-		"2016-10-18T20:29:38+00:00 deis[controller]: INFO admin deployed 2fd9226",
+		"2016-10-18T20:29:38+00:00 drycc[controller]: INFO admin deployed 2fd9226",
 		"failed to build controller log")
 }
 
@@ -94,7 +94,7 @@ func TestHandleValidControllerMessage(t *testing.T) {
 	assert.NoError(t, err, "error occured storing log message")
 	expected, _ := a.Read("foo", 1)
 	assert.Equal(t, expected[0],
-		"2016-10-18T20:29:38+00:00 deis[controller]: INFO admin deployed 2fd9226",
+		"2016-10-18T20:29:38+00:00 drycc[controller]: INFO admin deployed 2fd9226",
 		"failed to aquire controller log message")
 }
 

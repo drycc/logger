@@ -12,8 +12,8 @@ const (
 )
 
 type config struct {
-	NSQHost            string `envconfig:"DEIS_NSQD_SERVICE_HOST" default:""`
-	NSQPort            int    `envconfig:"DEIS_NSQD_SERVICE_PORT_TRANSPORT" default:"4150"`
+	NSQHost            string `envconfig:"DRYCC_NSQD_SERVICE_HOST" default:""`
+	NSQPort            int    `envconfig:"DRYCC_NSQD_SERVICE_PORT_TRANSPORT" default:"4150"`
 	NSQTopic           string `envconfig:"NSQ_TOPIC" default:"logs"`
 	NSQChannel         string `envconfig:"NSQ_CHANNEL" default:"consume"`
 	NSQHandlerCount    int    `envconfig:"NSQ_HANDLER_COUNT" default:"30"`

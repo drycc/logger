@@ -94,11 +94,11 @@ func (a *ringBufferAdapter) Read(app string, lines int) ([]string, error) {
 	if ok {
 		data := rb.read(lines)
 		if len(data) == 0 {
-			return nil, fmt.Errorf("Could not find logs for '%s'. Ringbuffer existed for '%s', but returned no logs.", app, app)
+			return nil, fmt.Errorf("could not find logs for '%s'. Ringbuffer existed for '%s', but returned no logs", app, app)
 		}
 		return data, nil
 	}
-	return nil, fmt.Errorf("Could not find logs for '%s'. No ringbuffer existed for '%s'.", app, app)
+	return nil, fmt.Errorf("could not find logs for '%s'. no ringbuffer existed for '%s'", app, app)
 }
 
 // Destroy deletes stored logs for the specified application

@@ -1,11 +1,11 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: deis-logger
+  name: drycc-logger
   labels:
-    heritage: deis
+    heritage: drycc
   annotations:
-    component.deis.io/version: {{ .Values.docker_tag }}
+    component.drycc.cc/version: {{ .Values.docker_tag }}
 spec:
   replicas: 1
   strategy:
@@ -15,37 +15,37 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: deis-logger
+      app: drycc-logger
   template:
     metadata:
       labels:
-        app: deis-logger
+        app: drycc-logger
     spec:
       containers:
-      - name: deis-logger
+      - name: drycc-logger
         image: quay.io/{{.Values.org}}/logger:{{.Values.docker_tag}}
         imagePullPolicy: {{.Values.pull_policy}}
         env:
         - name: STORAGE_ADAPTER
           value: redis
 {{- if eq .Values.global.logger_redis_location "off-cluster" }}
-        - name: DEIS_LOGGER_REDIS_DB
+        - name: DRYCC_LOGGER_REDIS_DB
           valueFrom:
             secretKeyRef:
               name: logger-redis-creds
               key: db
-        - name: DEIS_LOGGER_REDIS_SERVICE_HOST
+        - name: DRYCC_LOGGER_REDIS_SERVICE_HOST
           valueFrom:
             secretKeyRef:
               name: logger-redis-creds
               key: host
-        - name: DEIS_LOGGER_REDIS_SERVICE_PORT
+        - name: DRYCC_LOGGER_REDIS_SERVICE_PORT
           valueFrom:
             secretKeyRef:
               name: logger-redis-creds
               key: port
 {{- end }}
-        - name: DEIS_LOGGER_REDIS_PASSWORD
+        - name: DRYCC_LOGGER_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
               name: logger-redis-creds

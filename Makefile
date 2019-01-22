@@ -9,11 +9,11 @@ GO_PACKAGES = storage log weblog
 GO_PACKAGES_REPO_PATH = $(addprefix $(REPO_PATH)/,$(GO_PACKAGES))
 
 # the filepath to this repository, relative to $GOPATH/src
-REPO_PATH = github.com/deis/logger
+REPO_PATH = github.com/drycc/logger
 
 # The following variables describe the containerized development environment
 # and other build options
-DEV_ENV_IMAGE := quay.io/deis/go-dev:0.20.0
+DEV_ENV_IMAGE := quay.io/drycc/go-dev:v0.22.0
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -25,8 +25,8 @@ BINARY_DEST_DIR = rootfs/opt/logger/sbin
 DOCKER_HOST = $(shell echo $$DOCKER_HOST)
 BUILD_TAG ?= git-$(shell git rev-parse --short HEAD)
 SHORT_NAME ?= logger
-DEIS_REGISTRY ?= ${DEV_REGISTRY}
-IMAGE_PREFIX ?= deis
+DRYCC_REGISTRY ?= ${DEV_REGISTRY}
+IMAGE_PREFIX ?= drycc
 
 include versioning.mk
 
@@ -79,10 +79,10 @@ test-cover: start-test-redis start-test-nsq
 		--link ${REDIS_CONTAINER_NAME}:TEST_REDIS \
 		--link ${NSQ_CONTAINER_NAME}:TEST_NSQ \
 		${DEV_ENV_IMAGE} bash -c \
-		'DEIS_LOGGER_REDIS_SERVICE_HOST=$$TEST_REDIS_PORT_6379_TCP_ADDR \
-		 DEIS_LOGGER_REDIS_SERVICE_PORT=$$TEST_REDIS_PORT_6379_TCP_PORT \
-		 DEIS_NSQD_SERVICE_HOST=$$TEST_NSQ_PORT_4150_TCP_ADDR \
-		 DEIS_NSQD_SERVICE_PORT_TRANSPORT=$$TEST_NSQ_PORT_4150_TCP_PORT \
+		'DRYCC_LOGGER_REDIS_SERVICE_HOST=$$TEST_REDIS_PORT_6379_TCP_ADDR \
+		 DRYCC_LOGGER_REDIS_SERVICE_PORT=$$TEST_REDIS_PORT_6379_TCP_PORT \
+		 DRYCC_NSQD_SERVICE_HOST=$$TEST_NSQ_PORT_4150_TCP_ADDR \
+		 DRYCC_NSQD_SERVICE_PORT_TRANSPORT=$$TEST_NSQ_PORT_4150_TCP_PORT \
 		 test-cover.sh'
 	make stop-test-redis
 	make stop-test-nsq
@@ -121,10 +121,10 @@ test-unit: start-test-redis start-test-nsq
 		--link ${REDIS_CONTAINER_NAME}:TEST_REDIS \
 		--link ${NSQ_CONTAINER_NAME}:TEST_NSQ \
 		${DEV_ENV_IMAGE} bash -c \
-		'DEIS_LOGGER_REDIS_SERVICE_HOST=$$TEST_REDIS_PORT_6379_TCP_ADDR \
-		 DEIS_LOGGER_REDIS_SERVICE_PORT=$$TEST_REDIS_PORT_6379_TCP_PORT \
-		 DEIS_NSQD_SERVICE_HOST=$$TEST_NSQ_PORT_4150_TCP_ADDR \
-		 DEIS_NSQD_SERVICE_PORT_TRANSPORT=$$TEST_NSQ_PORT_4150_TCP_PORT \
+		'DRYCC_LOGGER_REDIS_SERVICE_HOST=$$TEST_REDIS_PORT_6379_TCP_ADDR \
+		 DRYCC_LOGGER_REDIS_SERVICE_PORT=$$TEST_REDIS_PORT_6379_TCP_PORT \
+		 DRYCC_NSQD_SERVICE_HOST=$$TEST_NSQ_PORT_4150_TCP_ADDR \
+		 DRYCC_NSQD_SERVICE_PORT_TRANSPORT=$$TEST_NSQ_PORT_4150_TCP_PORT \
 		 $(GOTEST) -tags="testredis" $$(glide nv)'
 	make stop-test-redis
 	make stop-test-nsq

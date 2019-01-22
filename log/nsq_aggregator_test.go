@@ -3,7 +3,7 @@ package log
 import (
 	"testing"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 	"github.com/stretchr/testify/assert"
 )
 

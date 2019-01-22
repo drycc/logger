@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: deis-logger
+  name: drycc-logger
   labels:
-    heritage: deis
-    app: deis-logger
+    heritage: drycc
+    app: drycc-logger
 spec:
   ports:
   - port: 80
     name: http
     targetPort: http
   selector:
-    app: deis-logger
+    app: drycc-logger

@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/deis/logger/storage"
+	"github.com/drycc/logger/storage"
 )
 
 const (
@@ -24,7 +24,7 @@ type Server struct {
 	started bool
 }
 
-// New returns a new HTTP Server. The caller should call Start to start it and Close when finished
+// NewServer returns a new HTTP Server. The caller should call Start to start it and Close when finished
 // to shut it down.
 func NewServer(storageAdapter storage.Adapter) *Server {
 	s := &Server{

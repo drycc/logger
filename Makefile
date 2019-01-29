@@ -47,7 +47,7 @@ dev: check-docker
 
 # Containerized dependency resolution
 bootstrap: check-docker
-	${DEV_ENV_CMD} glide install
+	${DEV_ENV_CMD} dep ensure
 
 # This is so you can build the binary without using docker
 build-binary:
@@ -125,6 +125,6 @@ test-unit: start-test-redis start-test-nsq
 		 DRYCC_LOGGER_REDIS_SERVICE_PORT=$$TEST_REDIS_PORT_6379_TCP_PORT \
 		 DRYCC_NSQD_SERVICE_HOST=$$TEST_NSQ_PORT_4150_TCP_ADDR \
 		 DRYCC_NSQD_SERVICE_PORT_TRANSPORT=$$TEST_NSQ_PORT_4150_TCP_PORT \
-		 $(GOTEST) -tags="testredis" $$(glide nv)'
+		 $(GOTEST) -tags="testredis" ./...'
 	make stop-test-redis
 	make stop-test-nsq

@@ -1,6 +1,6 @@
 
 # Drycc Logger
-[![Build Status](https://ci.drycc.cc/job/logger/badge/icon)](https://ci.drycc.cc/job/logger)
+[![Build Status](https://travis-ci.org/drycc/logger.svg?branch=master)](https://travis-ci.org/drycc/logger)
 [![codecov.io](https://codecov.io/github/drycc/logger/coverage.svg?branch=master)](https://codecov.io/github/drycc/logger?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/drycc/logger)](https://goreportcard.com/report/github.com/drycc/logger)
 [![Docker Repository on Quay](https://quay.io/repository/drycc/logger/status "Docker Repository on Quay")](https://quay.io/repository/drycc/logger)

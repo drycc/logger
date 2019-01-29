@@ -4,8 +4,8 @@ sudo: required
 services:
   - docker
 script:
-  - make bootstrap
-  - make test
+  - make bootstrap test
+  - make test-cover
 notifications:
   slack:
     rooms:

@@ -103,10 +103,10 @@ style-check:
 	shellcheck $(SHELL_SCRIPTS)
 
 start-test-redis:
-	docker run --name ${REDIS_CONTAINER_NAME} -d redis:latest || true
+	docker run --name ${REDIS_CONTAINER_NAME} -d redis:latest
 
 start-test-nsq:
-	docker run --name ${NSQ_CONTAINER_NAME} -d nsqio/nsq nsqd || true
+	docker run --name ${NSQ_CONTAINER_NAME} -d nsqio/nsq nsqd
 
 stop-test-redis:
 	docker kill ${REDIS_CONTAINER_NAME}

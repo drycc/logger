@@ -1,12 +1,12 @@
-FROM quay.io/drycc/base:v0.3.6
+FROM alpine:3.12
 
 # Add logger user and group
-RUN adduser --system \
-	--shell /bin/bash \
-	--disabled-password \
-	--home /opt/logger \
-	--group \
-	logger
+RUN adduser \
+       -s /bin/sh \
+       -D  \
+       -h /opt/logger \
+       logger \
+       logger
 
 COPY . /
 

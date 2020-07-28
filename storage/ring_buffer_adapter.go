@@ -29,7 +29,7 @@ func (rb *ringBuffer) read(lines int) []string {
 		return []string{}
 	}
 	// Only need a read lock because nothing we're about to do affects the internal state of the
-	// ringBuffer.  Mutliple reads can happen in parallel.  Only writing requires an exclusive lock.
+	// ringBuffer.  Multiple reads can happen in parallel.  Only writing requires an exclusive lock.
 	rb.mutex.RLock()
 	defer rb.mutex.RUnlock()
 	var start *ring.Ring

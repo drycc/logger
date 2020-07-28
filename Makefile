@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 GO = go
 GOFMT = gofmt -l
-GOLINT = golint
+GOLINT = lint
 GOTEST = $(GO) test --cover --race -v
 GOVET = $(GO) vet
 GO_FILES = $(wildcard *.go)
@@ -13,7 +13,7 @@ REPO_PATH = github.com/drycc/logger
 
 # The following variables describe the containerized development environment
 # and other build options
-DEV_ENV_IMAGE := quay.io/drycc/go-dev:v0.22.0
+DEV_ENV_IMAGE := drycc/go-dev
 DEV_ENV_WORK_DIR := /go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
 DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
@@ -47,7 +47,7 @@ dev: check-docker
 
 # Containerized dependency resolution
 bootstrap: check-docker
-	${DEV_ENV_CMD} dep ensure
+	${DEV_ENV_CMD} go mod vendor
 
 # This is so you can build the binary without using docker
 build-binary:
@@ -95,11 +95,7 @@ style-check:
 	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
 	$(GOVET) $(REPO_PATH) $(GO_PACKAGES_REPO_PATH)
-	$(GOLINT) ./log
-	$(GOLINT) ./storage
-	$(GOLINT) ./tests
-	$(GOLINT) ./weblog
-	$(GOLINT) .
+	$(GOLINT)
 	shellcheck $(SHELL_SCRIPTS)
 
 start-test-redis:

@@ -46,12 +46,10 @@ func main() {
 	}()
 
 	stoppedCh := aggregator.Stopped()
-	select {
-	case stopErr := <-stoppedCh:
-		if err != nil {
-			l.Fatal("Log aggregator has stopped: ", stopErr)
-		} else {
-			l.Fatal("Log aggregator has stopped with no error")
-		}
+	stopErr := <-stoppedCh
+	if err != nil {
+		l.Fatal("Log aggregator has stopped: ", stopErr)
+	} else {
+		l.Fatal("Log aggregator has stopped with no error")
 	}
 }

@@ -1,12 +1,15 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
-	r "gopkg.in/redis.v3"
+	r "github.com/go-redis/redis/v8"
 )
+
+var ctx = context.Background()
 
 type message struct {
 	app         string
@@ -23,7 +26,7 @@ func newMessage(app string, messageBody string) *message {
 type messagePipeliner struct {
 	bufferSize    int
 	messageCount  int
-	pipeline      *r.Pipeline
+	pipeline      r.Pipeliner
 	timeoutTicker *time.Ticker
 	queuedApps    map[string]bool
 	errCh         chan error
@@ -40,7 +43,7 @@ func newMessagePipeliner(bufferSize int, redisClient *r.Client, timeout time.Dur
 }
 
 func (mp *messagePipeliner) addMessage(message *message) {
-	if err := mp.pipeline.RPush(message.app, message.messageBody).Err(); err == nil {
+	if err := mp.pipeline.RPush(ctx, message.app, message.messageBody).Err(); err == nil {
 		mp.queuedApps[message.app] = true
 		mp.messageCount++
 	} else {
@@ -50,11 +53,11 @@ func (mp *messagePipeliner) addMessage(message *message) {
 
 func (mp messagePipeliner) execPipeline() {
 	for app := range mp.queuedApps {
-		if err := mp.pipeline.LTrim(app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
+		if err := mp.pipeline.LTrim(ctx, app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
 			mp.errCh <- fmt.Errorf("Error adding ltrim of %s to the pipeline: %s", app, err)
 		}
 	}
-	if _, err := mp.pipeline.Exec(); err != nil {
+	if _, err := mp.pipeline.Exec(ctx); err != nil {
 		mp.errCh <- fmt.Errorf("Error executing pipeline: %s", err)
 	}
 }
@@ -85,7 +88,7 @@ func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 		redisClient: r.NewClient(&r.Options{
 			Addr:     fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 			Password: cfg.Password, // "" == no password
-			DB:       int64(cfg.DB),
+			DB:       int(cfg.DB),
 		}),
 		messageChannel: make(chan *message),
 		stopCh:         make(chan struct{}),
@@ -130,7 +133,7 @@ func (a *redisAdapter) Write(app string, messageBody string) error {
 
 // Read retrieves a specified number of log lines from an app-specific list in redis
 func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
-	stringSliceCmd := a.redisClient.LRange(app, int64(-1*lines), -1)
+	stringSliceCmd := a.redisClient.LRange(ctx, app, int64(-1*lines), -1)
 	result, err := stringSliceCmd.Result()
 	if err != nil {
 		return nil, err
@@ -143,7 +146,7 @@ func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
 
 // Destroy deletes an app-specific list from redis
 func (a *redisAdapter) Destroy(app string) error {
-	if err := a.redisClient.Del(app).Err(); err != nil {
+	if err := a.redisClient.Del(ctx, app).Err(); err != nil {
 		return err
 	}
 	return nil

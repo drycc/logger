@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.org/drycc/logger.svg?branch=master)](https://travis-ci.org/drycc/logger)
 [![codecov.io](https://codecov.io/github/drycc/logger/coverage.svg?branch=master)](https://codecov.io/github/drycc/logger?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/drycc/logger)](https://goreportcard.com/report/github.com/drycc/logger)
-[![Docker Repository on Quay](https://quay.io/repository/drycc/logger/status "Docker Repository on Quay")](https://quay.io/repository/drycc/logger)
 
 Drycc - A Fork of Drycc Workflow
 
@@ -17,8 +16,6 @@ We welcome your input! If you have feedback, please [submit an issue][issues]. I
 
 ## Description
 A system logger for use in the [Drycc Workflow](https://drycc.com/workflow/) open source PaaS.
-
-This Docker image is based on [quay.io/drycc/base](https://github.com/drycc/docker-base) image. You can see what version we are currently using in the [Dockerfile](rootfs/Dockerfile)
 
 The new v2 logger implementation has seen a simplification from the last rewrite. While it still uses much of that code it no longer depends on `etcd`. Instead, we will use kubernetes service discovery to determine where logger is running.
 
@@ -52,7 +49,6 @@ The only assumption this project makes about your environment is that you have a
 To build the binary and image run the following make command:
 
 ```console
-DEV_REGISTRY=quay.io IMAGE_PREFIX=myaccount make build
 IMAGE_PREFIX=myaccount make build
 DEV_REGISTRY=myhost:5000 make build
 ```
@@ -61,7 +57,6 @@ DEV_REGISTRY=myhost:5000 make build
 The makefile assumes that you are pushing the image to a remote repository like quay or dockerhub. So you will need to supply the `REGISTRY` environment variable.
 
 ```console
-DEV_REGISTRY=quay.io IMAGE_PREFIX=myaccount make push
 IMAGE_PREFIX=myaccount make push
 DEV_REGISTRY=myhost:5000 make push
 ```

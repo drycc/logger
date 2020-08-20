@@ -46,7 +46,7 @@ func (a *nsqAggregator) Listen() error {
 			return err
 		}
 		consumer.AddConcurrentHandlers(a.handler, a.cfg.NSQHandlerCount)
-		if err := consumer.ConnectToNSQD(a.cfg.nsqURL()); err != nil {
+		if err := consumer.ConnectToNSQDs(a.cfg.nsqURLs()); err != nil {
 			return err
 		}
 		a.consumer = consumer

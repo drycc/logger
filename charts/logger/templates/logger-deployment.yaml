@@ -1,3 +1,4 @@
+{{ $nodeCount := .Values.nsqd.replicas | int }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +51,8 @@ spec:
             secretKeyRef:
               name: logger-redis-creds
               key: password
+        - name: DRYCC_NSQD_ADDRESSES
+          value: "{{range $i := until $nodeCount}}drycc-nsqd-{{$i}}.drycc-nsqd.{{ $.Release.Namespace }}.svc.cluster.local:{{$.Values.nsqd.tcp_port}}{{if lt (add 1 $i) $nodeCount}},{{end}}{{end}}"
         ports:
         - containerPort: 8088
           name: http

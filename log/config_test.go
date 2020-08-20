@@ -2,7 +2,6 @@ package log
 
 import (
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -11,10 +10,9 @@ import (
 
 func TestNsqURL(t *testing.T) {
 	c := config{
-		NSQHost: "somehost",
-		NSQPort: 3333,
+		NSQAddresses: "somehost:3333",
 	}
-	assert.Equal(t, c.nsqURL(), "somehost:3333")
+	assert.Equal(t, c.nsqURLs(), []string{"somehost:3333"})
 }
 
 func TestStopTimeoutDuration(t *testing.T) {
@@ -30,13 +28,11 @@ func TestParseConfig(t *testing.T) {
 	os.Setenv("NSQ_HANDLER_COUNT", "3")
 	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", "2")
 
-	port, err := strconv.Atoi(os.Getenv("DRYCC_NSQD_SERVICE_PORT_TRANSPORT"))
-	assert.NoError(t, err)
+	addresses := os.Getenv("DRYCC_NSQD_ADDRESSES")
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, c.NSQHost, os.Getenv("DRYCC_NSQD_SERVICE_HOST"))
-	assert.Equal(t, c.NSQPort, port)
+	assert.Equal(t, c.NSQAddresses, addresses)
 	assert.Equal(t, c.NSQTopic, "topic")
 	assert.Equal(t, c.NSQChannel, "channel")
 	assert.Equal(t, c.NSQHandlerCount, 3)

@@ -1,7 +1,7 @@
 package log
 
 import (
-	"fmt"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -12,16 +12,15 @@ const (
 )
 
 type config struct {
-	NSQHost            string `envconfig:"DRYCC_NSQD_SERVICE_HOST" default:""`
-	NSQPort            int    `envconfig:"DRYCC_NSQD_SERVICE_PORT_TRANSPORT" default:"4150"`
+	NSQAddresses       string `envconfig:"DRYCC_NSQD_ADDRESSES" default:"127.0.0.1:4150"`
 	NSQTopic           string `envconfig:"NSQ_TOPIC" default:"logs"`
 	NSQChannel         string `envconfig:"NSQ_CHANNEL" default:"consume"`
 	NSQHandlerCount    int    `envconfig:"NSQ_HANDLER_COUNT" default:"30"`
 	StopTimeoutSeconds int    `envconfig:"AGGREGATOR_STOP_TIMEOUT_SEC" default:"1"`
 }
 
-func (c config) nsqURL() string {
-	return fmt.Sprintf("%s:%d", c.NSQHost, c.NSQPort)
+func (c config) nsqURLs() []string {
+	return strings.Split(c.NSQAddresses, ",")
 }
 
 func (c config) stopTimeoutDuration() time.Duration {

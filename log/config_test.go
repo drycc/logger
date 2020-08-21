@@ -28,7 +28,7 @@ func TestParseConfig(t *testing.T) {
 	os.Setenv("NSQ_HANDLER_COUNT", "3")
 	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", "2")
 
-	addresses := os.Getenv("DRYCC_NSQD_ADDRESSES")
+	addresses := os.Getenv("DRYCC_NSQD_ADDRS")
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)

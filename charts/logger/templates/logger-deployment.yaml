@@ -51,7 +51,7 @@ spec:
             secretKeyRef:
               name: logger-redis-creds
               key: password
-        - name: DRYCC_NSQD_ADDRESSES
+        - name: DRYCC_NSQD_ADDRS
           value: "{{range $i := until $nsqdNodeCount}}drycc-nsqd-{{$i}}.drycc-nsqd.{{ $.Release.Namespace }}.svc.cluster.local:{{$.Values.nsqd.tcp_port}}{{if lt (add 1 $i) $nsqdNodeCount}},{{end}}{{end}}"
         ports:
         - containerPort: 8088

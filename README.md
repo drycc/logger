@@ -29,7 +29,7 @@ The following environment variables can be used to configure logger:
 | STORAGE_ADAPTER | "redis" |
 | NUMBER_OF_LINES (per app) | "1000" |
 | AGGREGATOR_TYPE | "nsq" |
-| DRYCC_NSQD_ADDRESSES | "127.0.0.1:4150" |
+| DRYCC_NSQD_ADDRS | "127.0.0.1:4150" |
 | NSQ_TOPIC | logs |
 | NSQ_CHANNEL | consume |
 | NSQ_HANDLER_COUNT | 30 |

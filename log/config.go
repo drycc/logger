@@ -12,7 +12,7 @@ const (
 )
 
 type config struct {
-	NSQAddresses       string `envconfig:"DRYCC_NSQD_ADDRESSES" default:"127.0.0.1:4150"`
+	NSQAddresses       string `envconfig:"DRYCC_NSQD_ADDRS" default:"127.0.0.1:4150"`
 	NSQTopic           string `envconfig:"NSQ_TOPIC" default:"logs"`
 	NSQChannel         string `envconfig:"NSQ_CHANNEL" default:"consume"`
 	NSQHandlerCount    int    `envconfig:"NSQ_HANDLER_COUNT" default:"30"`

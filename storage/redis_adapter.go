@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
+	"strings"
 	"time"
 
 	r "github.com/go-redis/redis/v8"
@@ -32,7 +34,7 @@ type messagePipeliner struct {
 	errCh         chan error
 }
 
-func newMessagePipeliner(bufferSize int, redisClient *r.Client, timeout time.Duration, errCh chan error) *messagePipeliner {
+func newMessagePipeliner(bufferSize int, redisClient *r.ClusterClient, timeout time.Duration, errCh chan error) *messagePipeliner {
 	return &messagePipeliner{
 		bufferSize:    bufferSize,
 		pipeline:      redisClient.Pipeline(),
@@ -62,10 +64,34 @@ func (mp messagePipeliner) execPipeline() {
 	}
 }
 
+func newRedisClusterSlots(addrs []string) func() ([]r.ClusterSlot, error) {
+	return func() ([]r.ClusterSlot, error) {
+		const slotsSize = 16383
+		var size = len(addrs)
+		var slotsRange = slotsSize / size
+
+		var slots []r.ClusterSlot
+
+		for index, addr := range addrs {
+			start := slotsRange * index
+			end := start + slotsRange
+			if (slotsSize - end) < slotsRange {
+				end = slotsSize
+			}
+			slots = append(slots, r.ClusterSlot{
+				Start: start,
+				End:   end,
+				Nodes: []r.ClusterNode{{Addr: addr}},
+			})
+		}
+		return slots, nil
+	}
+}
+
 type redisAdapter struct {
 	started        bool
 	bufferSize     int
-	redisClient    *r.Client
+	redisClient    *r.ClusterClient
 	messageChannel chan *message
 	stopCh         chan struct{}
 	config         *redisConfig
@@ -83,12 +109,14 @@ func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 	if err != nil {
 		return nil, err
 	}
+	addrs := strings.Split(cfg.Addrs, ",")
+	sort.Strings(addrs)
 	rsa := &redisAdapter{
 		bufferSize: bufferSize,
-		redisClient: r.NewClient(&r.Options{
-			Addr:     fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-			Password: cfg.Password, // "" == no password
-			DB:       int(cfg.DB),
+		redisClient: r.NewClusterClient(&r.ClusterOptions{
+			ClusterSlots:  newRedisClusterSlots(addrs),
+			Password:      cfg.Password, // "" == no password
+			RouteRandomly: true,
 		}),
 		messageChannel: make(chan *message),
 		stopCh:         make(chan struct{}),

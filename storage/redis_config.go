@@ -11,10 +11,8 @@ const (
 )
 
 type redisConfig struct {
-	Host                   string `envconfig:"DRYCC_LOGGER_REDIS_SERVICE_HOST" default:""`
-	Port                   int    `envconfig:"DRYCC_LOGGER_REDIS_SERVICE_PORT" default:"6379"`
+	Addrs                  string `envconfig:"DRYCC_LOGGER_REDIS_ADDRS" default:":6379"`
 	Password               string `envconfig:"DRYCC_LOGGER_REDIS_PASSWORD" default:""`
-	DB                     int    `envconfig:"DRYCC_LOGGER_REDIS_DB" default:"0"`
 	PipelineLength         int    `envconfig:"DRYCC_LOGGER_REDIS_PIPELINE_LENGTH" default:"50"`
 	PipelineTimeoutSeconds int    `envconfig:"DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS" default:"1"`
 	PipelineTimeout        time.Duration

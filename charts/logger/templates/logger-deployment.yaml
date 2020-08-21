@@ -1,4 +1,5 @@
 {{ $nsqdNodeCount := .Values.nsqd.replicas | int }}
+{{ $redisNodeCount := .Values.redis.replicas | int }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,22 +30,15 @@ spec:
         env:
         - name: STORAGE_ADAPTER
           value: redis
-{{- if eq .Values.global.logger_redis_location "off-cluster" }}
-        - name: DRYCC_LOGGER_REDIS_DB
+{{ if eq .Values.global.logger_redis_location "on-cluster"}}
+        - name: DRYCC_LOGGER_REDIS_ADDRS
+          value: "{{range $i := until $redisNodeCount}}drycc-logger-redis-{{$i}}.drycc-logger-redis.{{ $.Release.Namespace }}.svc.cluster.local:{{$.Values.redis.port}}{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
+{{- else if eq .Values.global.logger_redis_location "off-cluster" }}
+        - name: DRYCC_LOGGER_REDIS_ADDRS
           valueFrom:
             secretKeyRef:
               name: logger-redis-creds
-              key: db
-        - name: DRYCC_LOGGER_REDIS_SERVICE_HOST
-          valueFrom:
-            secretKeyRef:
-              name: logger-redis-creds
-              key: host
-        - name: DRYCC_LOGGER_REDIS_SERVICE_PORT
-          valueFrom:
-            secretKeyRef:
-              name: logger-redis-creds
-              key: port
+              key: addrs
 {{- end }}
         - name: DRYCC_LOGGER_REDIS_PASSWORD
           valueFrom:

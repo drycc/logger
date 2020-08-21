@@ -12,7 +12,7 @@ nsqd:
 
 redis:
   replicas: 1
-  port: 4150
+  port: "6379"
 
 global:
   # Set the location of Workflow's logger-specific Redis instance

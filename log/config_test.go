@@ -10,7 +10,7 @@ import (
 
 func TestNsqURL(t *testing.T) {
 	c := config{
-		NSQAddresses: "somehost:3333",
+		NSQDAddresses: "somehost:3333",
 	}
 	assert.Equal(t, c.nsqURLs(), []string{"somehost:3333"})
 }
@@ -32,7 +32,7 @@ func TestParseConfig(t *testing.T) {
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, c.NSQAddresses, addresses)
+	assert.Equal(t, c.NSQDAddresses, addresses)
 	assert.Equal(t, c.NSQTopic, "topic")
 	assert.Equal(t, c.NSQChannel, "channel")
 	assert.Equal(t, c.NSQHandlerCount, 3)

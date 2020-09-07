@@ -12,7 +12,7 @@ const (
 )
 
 type config struct {
-	NSQAddresses       string `envconfig:"DRYCC_NSQD_ADDRS" default:"127.0.0.1:4150"`
+	NSQDAddresses      string `envconfig:"DRYCC_NSQD_ADDRS" default:"127.0.0.1:4150"`
 	NSQTopic           string `envconfig:"NSQ_TOPIC" default:"logs"`
 	NSQChannel         string `envconfig:"NSQ_CHANNEL" default:"consume"`
 	NSQHandlerCount    int    `envconfig:"NSQ_HANDLER_COUNT" default:"30"`
@@ -20,7 +20,7 @@ type config struct {
 }
 
 func (c config) nsqURLs() []string {
-	return strings.Split(c.NSQAddresses, ",")
+	return strings.Split(c.NSQDAddresses, ",")
 }
 
 func (c config) stopTimeoutDuration() time.Duration {

@@ -1,7 +1,7 @@
 
 # Drycc Logger
-[![Build Status](https://travis-ci.org/drycc/logger.svg?branch=master)](https://travis-ci.org/drycc/logger)
-[![codecov.io](https://codecov.io/github/drycc/logger/coverage.svg?branch=master)](https://codecov.io/github/drycc/logger?branch=master)
+[![Build Status](https://travis-ci.org/drycc/logger.svg?branch=main)](https://travis-ci.org/drycc/logger)
+[![codecov.io](https://codecov.io/github/drycc/logger/coverage.svg?branch=main)](https://codecov.io/github/drycc/logger?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/drycc/logger)](https://goreportcard.com/report/github.com/drycc/logger)
 
 Drycc - A Fork of Drycc Workflow

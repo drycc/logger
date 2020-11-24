@@ -32,7 +32,7 @@ spec:
           value: redis
 {{ if eq .Values.global.logger_redis_location "on-cluster"}}
         - name: DRYCC_LOGGER_REDIS_ADDRS
-          value: "{{range $i := until $redisNodeCount}}drycc-logger-redis-{{$i}}.drycc-logger-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.cluster_domain}}:{{$.Values.redis.port}}{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
+          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.cluster_domain}}:{{$.Values.redis.port}}{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
 {{- else if eq .Values.global.logger_redis_location "off-cluster" }}
         - name: DRYCC_LOGGER_REDIS_ADDRS
           valueFrom:

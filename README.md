@@ -34,10 +34,10 @@ The following environment variables can be used to configure logger:
 | NSQ_CHANNEL | consume |
 | NSQ_HANDLER_COUNT | 30 |
 | AGGREGATOR_STOP_TIMEOUT_SEC | 1 |
-| DRYCC_LOGGER_REDIS_ADDRS | ":6379" |
-| DRYCC_LOGGER_REDIS_PASSWORD | "" |
-| DRYCC_LOGGER_REDIS_PIPELINE_LENGTH | 50 |
-| DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS | 1 |
+| DRYCC_REDIS_ADDRS | ":6379" |
+| DRYCC_REDIS_PASSWORD | "" |
+| DRYCC_REDIS_PIPELINE_LENGTH | 50 |
+| DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS | 1 |
 
 ## Development
 The only assumption this project makes about your environment is that you have a working docker host to build the image against.

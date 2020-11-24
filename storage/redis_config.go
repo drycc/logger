@@ -11,10 +11,10 @@ const (
 )
 
 type redisConfig struct {
-	Addrs                  string `envconfig:"DRYCC_LOGGER_REDIS_ADDRS" default:":6379"`
-	Password               string `envconfig:"DRYCC_LOGGER_REDIS_PASSWORD" default:""`
-	PipelineLength         int    `envconfig:"DRYCC_LOGGER_REDIS_PIPELINE_LENGTH" default:"50"`
-	PipelineTimeoutSeconds int    `envconfig:"DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS" default:"1"`
+	Addrs                  string `envconfig:"DRYCC_REDIS_ADDRS" default:":6379"`
+	Password               string `envconfig:"DRYCC_REDIS_PASSWORD" default:""`
+	PipelineLength         int    `envconfig:"DRYCC_REDIS_PIPELINE_LENGTH" default:"50"`
+	PipelineTimeoutSeconds int    `envconfig:"DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS" default:"1"`
 	PipelineTimeout        time.Duration
 }
 

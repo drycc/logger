@@ -8,14 +8,14 @@ import (
 )
 
 func TestParseConfig(t *testing.T) {
-	addrs := os.Getenv("DRYCC_LOGGER_REDIS_ADDRS")
-	password := os.Getenv("DRYCC_LOGGER_REDIS_PASSWORD")
-	pipelineLength := os.Getenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH")
-	pipelineTimeoutSeconds := os.Getenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS")
+	addrs := os.Getenv("DRYCC_REDIS_ADDRS")
+	password := os.Getenv("DRYCC_REDIS_PASSWORD")
+	pipelineLength := os.Getenv("DRYCC_REDIS_PIPELINE_LENGTH")
+	pipelineTimeoutSeconds := os.Getenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS")
 
-	os.Setenv("DRYCC_LOGGER_REDIS_PASSWORD", "password")
-	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH", "1")
-	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", "2")
+	os.Setenv("DRYCC_REDIS_PASSWORD", "password")
+	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", "1")
+	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", "2")
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err, "error parsing config")
@@ -24,7 +24,7 @@ func TestParseConfig(t *testing.T) {
 	assert.Equal(t, c.PipelineLength, 1)
 	assert.Equal(t, c.PipelineTimeoutSeconds, 2)
 
-	os.Setenv("DRYCC_LOGGER_REDIS_PASSWORD", password)
-	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_LENGTH", pipelineLength)
-	os.Setenv("DRYCC_LOGGER_REDIS_PIPELINE_TIMEOUT_SECONDS", pipelineTimeoutSeconds)
+	os.Setenv("DRYCC_REDIS_PASSWORD", password)
+	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", pipelineLength)
+	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", pipelineTimeoutSeconds)
 }

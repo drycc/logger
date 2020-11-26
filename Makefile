@@ -51,7 +51,7 @@ bootstrap: check-docker
 
 # This is so you can build the binary without using docker
 build-binary:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags ${LDFLAGS} -o $(BINARY_DEST_DIR)/logger .
+	CGO_ENABLED=0 go build -ldflags ${LDFLAGS} -o $(BINARY_DEST_DIR)/logger .
 
 build: docker-build
 build-without-container: build-binary build-image

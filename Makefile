@@ -11,6 +11,8 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(REPO_PATH)/,$(GO_PACKAGES))
 # the filepath to this repository, relative to $GOPATH/src
 REPO_PATH = github.com/drycc/logger
 
+PLATFORM ?= linux/amd64,linux/arm64
+
 # The following variables describe the containerized development environment
 # and other build options
 DEV_ENV_IMAGE := drycc/go-dev
@@ -62,11 +64,12 @@ build-with-container: check-docker
 	mkdir -p ${BINARY_DEST_DIR}
 	${DEV_ENV_CMD} make build-binary
 
-docker-build: build-with-container build-image
-
-build-image:
-	docker build ${DOCKER_BUILD_FLAGS} -t ${IMAGE} rootfs
+docker-build: check-docker
+	docker build ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} .
 	docker tag ${IMAGE} ${MUTABLE_IMAGE}
+
+docker-buildx:
+	docker buildx build --platform ${PLATFORM} ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} . --push
 
 clean: check-docker
 	docker rmi $(IMAGE)

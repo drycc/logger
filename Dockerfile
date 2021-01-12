@@ -1,4 +1,4 @@
-FROM drycc/go-dev:latest AS build
+FROM docker.io/drycc/go-dev:latest AS build
 ARG LDFLAGS
 ADD . /app
 RUN export GO111MODULE=on \
@@ -6,7 +6,7 @@ RUN export GO111MODULE=on \
   && CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o /usr/local/bin/logger .
 
 
-FROM alpine:3.12
+FROM docker.io/library/alpine:3.12
 
 # Add logger user and group
 RUN adduser \

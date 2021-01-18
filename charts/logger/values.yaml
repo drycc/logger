@@ -7,12 +7,9 @@ image_registry: ""
 
 nsqd:
   replicas: 1
-  tcp_port: 4150
-  http_port: 4151
 
 redis:
   replicas: 1
-  port: "6379"
 
 global:
   # A domain name consists of one or more parts.

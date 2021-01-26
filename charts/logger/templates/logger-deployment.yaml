@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: drycc-logger
-        image: {{.Values.image_registry}}{{.Values.org}}/logger:{{.Values.image_tag}}
+        image: {{.Values.image_registry}}/{{.Values.org}}/logger:{{.Values.image_tag}}
         imagePullPolicy: {{.Values.image_pull_policy}}
         env:
         - name: STORAGE_ADAPTER

@@ -4,8 +4,8 @@ sudo: required
 services:
   - docker
 script:
-  - make bootstrap test
-  - make test-cover
+  - DEV_REGISTRY="docker.io" make bootstrap test
+  - DEV_REGISTRY="docker.io" make test-cover
 notifications:
   slack:
     rooms:

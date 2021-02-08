@@ -1,6 +1,6 @@
 name: logger
 home: https://github.com/drycc/logger
-version: <Will be populated by the ci before publishing the chart>
+version: v1.0.0
 description: In-memory log buffer used by Drycc Workflow.
 maintainers:
   - name: Drycc Team

@@ -17,10 +17,7 @@ RUN adduser \
        logger
 
 COPY . /
-COPY --from=build /usr/local/bin/logger /opt/logger/sbin/logger
-
-# Fix some permission since we'll be running as a non-root user
-RUN chown -R logger:logger /opt/logger
+COPY --chown=logger:logger --from=build /usr/local/bin/logger /opt/logger/sbin/logger
 
 USER logger
 

@@ -174,10 +174,7 @@ func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
 
 // Destroy deletes an app-specific list from redis
 func (a *redisAdapter) Destroy(app string) error {
-	if err := a.redisClient.Del(ctx, app).Err(); err != nil {
-		return err
-	}
-	return nil
+	return a.redisClient.Del(ctx, app).Err()
 }
 
 // Reopen the storage adapter-- in the case of this implementation, a no-op

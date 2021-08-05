@@ -64,8 +64,8 @@ func (mp messagePipeliner) execPipeline() {
 	}
 }
 
-func newRedisClusterSlots(addrs []string) func() ([]r.ClusterSlot, error) {
-	return func() ([]r.ClusterSlot, error) {
+func newRedisClusterSlots(addrs []string) func(context.Context) ([]r.ClusterSlot, error) {
+	return func(context.Context) ([]r.ClusterSlot, error) {
 		const slotsSize = 16383
 		var size = len(addrs)
 		var slotsRange = slotsSize / size

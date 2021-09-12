@@ -23,6 +23,28 @@ spec:
       labels:
         app: drycc-logger
     spec:
+      initContainers:
+      - name: drycc-logger-init
+        image: docker.io/drycc/python-dev:latest
+        imagePullPolicy: {{.Values.image_pull_policy}}
+        command:
+          - netcat
+          - -v
+          - -a
+          - $(DRYCC_REDIS_ADDRS),$(DRYCC_NSQD_ADDRS)
+        env:
+{{ if eq .Values.global.redis_location "on-cluster"}}
+        - name: DRYCC_REDIS_ADDRS
+          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.cluster_domain}}:6379{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
+{{- else if eq .Values.global.redis_location "off-cluster" }}
+        - name: DRYCC_REDIS_ADDRS
+          valueFrom:
+            secretKeyRef:
+              name: redis-creds
+              key: addrs
+{{- end }}
+        - name: DRYCC_NSQD_ADDRS
+          value: "{{range $i := until $nsqdNodeCount}}drycc-nsqd-{{$i}}.drycc-nsqd.{{$.Release.Namespace}}.svc.{{$.Values.global.cluster_domain}}:4150{{if lt (add 1 $i) $nsqdNodeCount}},{{end}}{{end}}"
       containers:
       - name: drycc-logger
         image: {{.Values.image_registry}}/{{.Values.image_org}}/logger:{{.Values.image_tag}}

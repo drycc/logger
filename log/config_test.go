@@ -1,19 +1,13 @@
 package log
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
-
-func TestNsqURL(t *testing.T) {
-	c := config{
-		NSQDAddresses: "somehost:3333",
-	}
-	assert.Equal(t, c.nsqURLs(), []string{"somehost:3333"})
-}
 
 func TestStopTimeoutDuration(t *testing.T) {
 	c := config{
@@ -23,18 +17,28 @@ func TestStopTimeoutDuration(t *testing.T) {
 }
 
 func TestParseConfig(t *testing.T) {
-	os.Setenv("NSQ_TOPIC", "topic")
-	os.Setenv("NSQ_CHANNEL", "channel")
-	os.Setenv("NSQ_HANDLER_COUNT", "3")
-	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", "2")
+	original, err := parseConfig("foo")
+	assert.NoError(t, err)
 
-	addresses := os.Getenv("DRYCC_NSQD_ADDRS")
+	os.Setenv("DRYCC_REDIS_ADDRS", "127.0.0.1:6379")
+	os.Setenv("DRYCC_REDIS_PASSWORD", "123456")
+	os.Setenv("DRYCC_REDIS_STREAM", "log")
+	os.Setenv("DRYCC_REDIS_STREAM_GROUP", "logger")
+	os.Setenv("DRYCC_REDIS_STREAM_COUNT", "30")
+	os.Setenv("DRYCC_REDIS_STREAM_BLOCK", "30")
+	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", "2")
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, c.NSQDAddresses, addresses)
-	assert.Equal(t, c.NSQTopic, "topic")
-	assert.Equal(t, c.NSQChannel, "channel")
-	assert.Equal(t, c.NSQHandlerCount, 3)
+	assert.Equal(t, c.RedisAddrs, "127.0.0.1:6379")
+	assert.Equal(t, c.RedisPassword, "123456")
+	assert.Equal(t, c.RedisStream, "log")
+	assert.Equal(t, c.RedisStreamGroup, "logger")
 	assert.Equal(t, c.StopTimeoutSeconds, 2)
+
+	os.Setenv("DRYCC_REDIS_ADDRS", original.RedisAddrs)
+	os.Setenv("DRYCC_REDIS_PASSWORD", original.RedisPassword)
+	os.Setenv("DRYCC_REDIS_STREAM", original.RedisStream)
+	os.Setenv("DRYCC_REDIS_STREAM_GROUP", original.RedisStreamGroup)
+	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", fmt.Sprint(original.StopTimeoutSeconds))
 }

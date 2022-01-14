@@ -26,11 +26,15 @@ func handle(rawMessage []byte, storageAdapter storage.Adapter) error {
 	if err := json.Unmarshal(rawMessage, message); err != nil {
 		return err
 	}
+	var err error
 	if fromController(message) {
-		storageAdapter.Write(getApplicationFromControllerMessage(message), buildControllerLogMessage(message))
+		err = storageAdapter.Write(getApplicationFromControllerMessage(message), buildControllerLogMessage(message))
 	} else {
 		labels := message.Kubernetes.Labels
-		storageAdapter.Write(labels["app"], buildApplicationLogMessage(message))
+		err = storageAdapter.Write(labels["app"], buildApplicationLogMessage(message))
+	}
+	if err != nil {
+		fmt.Printf("storage message error, %v, %v", err, storageAdapter)
 	}
 	return nil
 }

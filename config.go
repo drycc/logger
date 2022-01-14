@@ -11,7 +11,7 @@ const (
 type config struct {
 	StorageType    string `envconfig:"STORAGE_ADAPTER" default:"redis"`
 	NumLines       int    `envconfig:"NUMBER_OF_LINES" default:"1000"`
-	AggregatorType string `envconfig:"AGGREGATOR_TYPE" default:"nsq"`
+	AggregatorType string `envconfig:"AGGREGATOR_TYPE" default:"redis"`
 }
 
 func parseConfig(appName string) (*config, error) {

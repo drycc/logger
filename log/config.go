@@ -1,7 +1,6 @@
 package log
 
 import (
-	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -12,15 +11,11 @@ const (
 )
 
 type config struct {
-	NSQDAddresses      string `envconfig:"DRYCC_NSQD_ADDRS" default:"127.0.0.1:4150"`
-	NSQTopic           string `envconfig:"NSQ_TOPIC" default:"logs"`
-	NSQChannel         string `envconfig:"NSQ_CHANNEL" default:"consume"`
-	NSQHandlerCount    int    `envconfig:"NSQ_HANDLER_COUNT" default:"30"`
+	RedisAddrs         string `envconfig:"DRYCC_REDIS_ADDRS" default:":6379"`
+	RedisPassword      string `envconfig:"DRYCC_REDIS_PASSWORD" default:""`
+	RedisStream        string `envconfig:"DRYCC_REDIS_STREAM" default:"logs"`
+	RedisStreamGroup   string `envconfig:"DRYCC_REDIS_STREAM_GROUP" default:"logger"`
 	StopTimeoutSeconds int    `envconfig:"AGGREGATOR_STOP_TIMEOUT_SEC" default:"1"`
-}
-
-func (c config) nsqURLs() []string {
-	return strings.Split(c.NSQDAddresses, ",")
 }
 
 func (c config) stopTimeoutDuration() time.Duration {

@@ -1,3 +1,4 @@
+//go:build testredis
 // +build testredis
 
 package storage

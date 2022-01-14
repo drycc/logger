@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -8,10 +9,8 @@ import (
 )
 
 func TestParseConfig(t *testing.T) {
-	addrs := os.Getenv("DRYCC_REDIS_ADDRS")
-	password := os.Getenv("DRYCC_REDIS_PASSWORD")
-	pipelineLength := os.Getenv("DRYCC_REDIS_PIPELINE_LENGTH")
-	pipelineTimeoutSeconds := os.Getenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS")
+	original, err := parseConfig("foo")
+	assert.NoError(t, err, "error parsing config")
 
 	os.Setenv("DRYCC_REDIS_PASSWORD", "password")
 	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", "1")
@@ -19,12 +18,12 @@ func TestParseConfig(t *testing.T) {
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err, "error parsing config")
-	assert.Equal(t, c.Addrs, addrs)
+	assert.Equal(t, c.Addrs, original.Addrs)
 	assert.Equal(t, c.Password, "password")
 	assert.Equal(t, c.PipelineLength, 1)
 	assert.Equal(t, c.PipelineTimeoutSeconds, 2)
 
-	os.Setenv("DRYCC_REDIS_PASSWORD", password)
-	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", pipelineLength)
-	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", pipelineTimeoutSeconds)
+	os.Setenv("DRYCC_REDIS_PASSWORD", original.Password)
+	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", fmt.Sprint(original.PipelineLength))
+	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", fmt.Sprint(original.PipelineTimeoutSeconds))
 }

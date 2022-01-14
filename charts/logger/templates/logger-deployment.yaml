@@ -1,4 +1,3 @@
-{{ $nsqdNodeCount := .Values.nsqd.replicas | int }}
 {{ $redisNodeCount := .Values.redis.replicas | int }}
 apiVersion: apps/v1
 kind: Deployment
@@ -31,11 +30,11 @@ spec:
           - netcat
           - -v
           - -a
-          - $(DRYCC_REDIS_ADDRS),$(DRYCC_NSQD_ADDRS)
+          - $(DRYCC_REDIS_ADDRS)
         env:
 {{ if eq .Values.global.redisLocation "on-cluster"}}
         - name: DRYCC_REDIS_ADDRS
-          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.clusterDomain}}:{{$.Values.redis.port}}{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
+          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.clusterDomain}}:6379{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
 {{- else if eq .Values.global.redisLocation "off-cluster" }}
         - name: DRYCC_REDIS_ADDRS
           valueFrom:
@@ -43,8 +42,6 @@ spec:
               name: redis-creds
               key: addrs
 {{- end }}
-        - name: DRYCC_NSQD_ADDRS
-          value: "{{range $i := until $nsqdNodeCount}}drycc-nsqd-{{$i}}.drycc-nsqd.{{$.Release.Namespace}}.svc.{{$.Values.global.clusterDomain}}:{{$.Values.nsqd.tcpPort}}{{if lt (add 1 $i) $nsqdNodeCount}},{{end}}{{end}}"
       containers:
       - name: drycc-logger
         image: {{.Values.imageRegistry}}/{{.Values.imageOrg}}/logger:{{.Values.imageTag}}
@@ -54,7 +51,7 @@ spec:
           value: redis
 {{ if eq .Values.global.redisLocation "on-cluster"}}
         - name: DRYCC_REDIS_ADDRS
-          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.clusterDomain}}:{{$.Values.redis.port}}{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
+          value: "{{range $i := until $redisNodeCount}}drycc-redis-{{$i}}.drycc-redis.{{$.Release.Namespace}}.svc.{{$.Values.global.clusterDomain}}:6379{{if lt (add 1 $i) $redisNodeCount}},{{end}}{{end}}"
 {{- else if eq .Values.global.redisLocation "off-cluster" }}
         - name: DRYCC_REDIS_ADDRS
           valueFrom:

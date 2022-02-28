@@ -3,18 +3,18 @@ ARG LDFLAGS
 ADD . /app
 RUN export GO111MODULE=on \
   && cd /app \
-  && CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o /usr/local/bin/logger .
+  && CGO_ENABLED=0 init-stack go build -ldflags "${LDFLAGS}" -o /usr/local/bin/logger .
 
 
-FROM docker.io/library/alpine:3.12
+FROM docker.io/drycc/base:bullseye
 
 # Add logger user and group
-RUN adduser \
-       -s /bin/sh \
-       -D  \
-       -h /opt/logger \
-       logger \
-       logger
+RUN adduser --system \
+   --shell /bin/sh \
+   --disabled-password \
+   --home /opt/logger \
+   --group \
+   logger
 
 COPY . /
 COPY --chown=logger:logger --from=build /usr/local/bin/logger /opt/logger/sbin/logger

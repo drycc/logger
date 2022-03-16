@@ -22,6 +22,9 @@ spec:
       labels:
         app: drycc-logger
     spec:
+      {{- if .Values.global.common }}
+      {{- include "common.affinity" (dict "key" "app" "values" (list "drycc-logger")) | indent 6 }}
+      {{- end }}
       initContainers:
       - name: drycc-logger-init
         image: docker.io/drycc/python-dev:latest

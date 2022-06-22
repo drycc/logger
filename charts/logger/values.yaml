@@ -5,6 +5,24 @@ imageRegistry: "registry.drycc.cc"
 # limitsCpu: "100m"
 # limitsMemory: "50Mi"
 
+nodeAffinityPreset:
+  key: "drycc.cc/node"
+  type: "soft"
+  values:
+  - "true"
+
+podAffinityPreset:
+  key: "security"
+  type: ""
+  values:
+  - "drycc-security"
+
+podAntiAffinityPreset:
+  key: "app"
+  type: "soft"
+  values:
+  - "drycc-logger"
+
 # Service
 service:
   # Provide any additional service annotations

@@ -22,7 +22,8 @@ podAntiAffinityPreset:
   type: "soft"
   values:
   - "drycc-logger"
-
+# logger replicas
+replicas: 1
 # Service
 service:
   # Provide any additional service annotations

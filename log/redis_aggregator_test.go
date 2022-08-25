@@ -13,7 +13,7 @@ import (
 )
 
 func TestAggregator(t *testing.T) {
-	storageAdapter, err := storage.NewAdapter("memory", 100)
+	storageAdapter, err := storage.NewAdapter("file", 100)
 	assert.NoError(t, err)
 	aggregator, err := NewAggregator("redis", storageAdapter)
 	assert.NoError(t, err)

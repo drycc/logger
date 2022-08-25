@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-var logRoot = "/data/logs"
+var LogRoot = "/data/logs"
 
 type fileAdapter struct {
 	files map[string]*os.File
@@ -128,7 +128,7 @@ func (a *fileAdapter) getFile(app string) (*os.File, error) {
 }
 
 func (a *fileAdapter) getFilePath(app string) string {
-	return path.Join(logRoot, app+".log")
+	return path.Join(LogRoot, app+".log")
 }
 
 func fileExists(path string) (bool, error) {

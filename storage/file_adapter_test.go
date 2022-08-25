@@ -10,11 +10,11 @@ import (
 
 func TestReadFromNonExistingApp(t *testing.T) {
 	var err error
-	logRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = ioutil.TempDir("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.Remove(logRoot)
+	defer os.Remove(LogRoot)
 	// Initialize a new storage adapter
 	a, err := NewFileAdapter()
 	if err != nil {
@@ -32,11 +32,11 @@ func TestReadFromNonExistingApp(t *testing.T) {
 
 func TestLogs(t *testing.T) {
 	var err error
-	logRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = ioutil.TempDir("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.Remove(logRoot)
+	defer os.Remove(LogRoot)
 	a, err := NewFileAdapter()
 	if err != nil {
 		t.Error(err)
@@ -75,11 +75,11 @@ func TestLogs(t *testing.T) {
 
 func TestDestroy(t *testing.T) {
 	var err error
-	logRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = ioutil.TempDir("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.Remove(logRoot)
+	defer os.Remove(LogRoot)
 	sa, err := NewFileAdapter()
 	if err != nil {
 		t.Error(err)
@@ -94,7 +94,8 @@ func TestDestroy(t *testing.T) {
 	if err := a.Write(app, "Hello, log!"); err != nil {
 		t.Error(err)
 	}
-	filename := path.Join(logRoot, fmt.Sprintf("%s.log", app))
+
+	filename := path.Join(LogRoot, fmt.Sprintf("%s.log", app))
 	// Test log file exists
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		t.Error("Log file was expected to exist, but doesn't.")
@@ -115,11 +116,11 @@ func TestDestroy(t *testing.T) {
 
 func TestReopen(t *testing.T) {
 	var err error
-	logRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = ioutil.TempDir("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
-	defer os.Remove(logRoot)
+	defer os.Remove(LogRoot)
 	sa, err := NewFileAdapter()
 	if err != nil {
 		t.Error(err)

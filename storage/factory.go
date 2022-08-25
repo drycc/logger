@@ -22,13 +22,6 @@ func NewAdapter(adapterType string, numLines int) (Adapter, error) {
 		}
 		return adapter, nil
 	}
-	if adapterType == "memory" {
-		adapter, err := NewRingBufferAdapter(numLines)
-		if err != nil {
-			return nil, err
-		}
-		return adapter, nil
-	}
 	if adapterType == "redis" {
 		adapter, err := NewRedisStorageAdapter(numLines)
 		if err != nil {

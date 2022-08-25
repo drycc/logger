@@ -35,17 +35,6 @@ func TestFactoryGetFileBasedAdapter(t *testing.T) {
 	}
 }
 
-func TestFactoryGetMemoryBasedAdapter(t *testing.T) {
-	a, err := NewAdapter("memory", 1)
-	if err != nil {
-		t.Error(err)
-	}
-	retType, ok := a.(*ringBufferAdapter)
-	if !ok {
-		t.Fatalf("Expected a *ringBufferAdapter, got %s", reflect.TypeOf(retType).String())
-	}
-}
-
 func TestGetRedisBasedAdapter(t *testing.T) {
 	a, err := NewAdapter("redis", 1)
 	if err != nil {

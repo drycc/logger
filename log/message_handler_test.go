@@ -74,7 +74,8 @@ func TestBuildApplicationLogMessageFromInvalidMessage(t *testing.T) {
 }
 
 func TestHandleValidAppMessage(t *testing.T) {
-	a, err := storage.NewRingBufferAdapter(1)
+	storage.LogRoot = "/tmp"
+	a, err := storage.NewAdapter("file", 1)
 	assert.NoError(t, err, "error creating ring buffer")
 	err = handle([]byte(validAppMessage), a)
 	assert.NoError(t, err, "error occurred storing log message")
@@ -85,7 +86,8 @@ func TestHandleValidAppMessage(t *testing.T) {
 }
 
 func TestHandleValidControllerMessage(t *testing.T) {
-	a, err := storage.NewRingBufferAdapter(1)
+	storage.LogRoot = "/tmp"
+	a, err := storage.NewAdapter("file", 1)
 	assert.NoError(t, err, "error creating ring buffer")
 	err = handle([]byte(validControllerMessage), a)
 	assert.NoError(t, err, "error occurred storing log message")
@@ -96,7 +98,8 @@ func TestHandleValidControllerMessage(t *testing.T) {
 }
 
 func TestHandleInvalidAppMessage(t *testing.T) {
-	a, err := storage.NewRingBufferAdapter(1)
+	storage.LogRoot = "/tmp"
+	a, err := storage.NewAdapter("file", 1)
 	assert.NoError(t, err, "error creating ring buffer")
 	err = handle([]byte(validAppMessage), a)
 	assert.NoError(t, err, "error occurred storing log message")
@@ -107,7 +110,8 @@ func TestHandleInvalidAppMessage(t *testing.T) {
 }
 
 func TestHandleInvalidControllerMessage(t *testing.T) {
-	a, err := storage.NewRingBufferAdapter(1)
+	storage.LogRoot = "/tmp"
+	a, err := storage.NewAdapter("file", 1)
 	assert.NoError(t, err, "error creating ring buffer")
 	err = handle([]byte(badjson), a)
 	assert.Error(t, err, "no error occurred parsing json")

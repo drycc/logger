@@ -25,7 +25,7 @@ func newTestListener(t *testing.T) net.Listener {
 }
 
 func newTestStorageAdapter(t *testing.T) storage.Adapter {
-	storageAdapter, err := storage.NewAdapter("memory", 1)
+	storageAdapter, err := storage.NewAdapter("file", 1)
 	if err != nil {
 		t.Fatalf("Error creating storage adapter: %v", err)
 	}

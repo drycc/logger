@@ -5,7 +5,7 @@ dependencies:
   - name: common
     repository: https://charts.drycc.cc/stable
     version: 1.x.x
-description: In-memory log buffer used by Drycc Workflow.
+description: Log buffer used by Drycc Workflow.
 maintainers:
   - name: Drycc Team
     email: engineering@drycc.com

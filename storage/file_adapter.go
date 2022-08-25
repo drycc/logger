@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -71,6 +73,41 @@ func (a *fileAdapter) Read(app string, lines int) ([]string, error) {
 	}
 	logStrs := strings.Split(string(logBytes), "\n")
 	return logStrs[:len(logStrs)-1], nil
+}
+
+// Make Chan a pipeline to read logs all the time
+func (a *fileAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
+	filePath := a.getFilePath(app)
+	exists, err := fileExists(filePath)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, fmt.Errorf("Could not find logs for '%s'", app)
+	}
+
+	channel := make(chan string, size)
+	go func() {
+		defer close(channel)
+		cmd := exec.Command("tail", "-n", "0", "-f", filePath)
+		out, err := cmd.StdoutPipe()
+		defer out.Close()
+		if err != nil {
+			panic(err)
+		}
+		cmd.Start()
+		go func() {
+			<-ctx.Done()
+			cmd.Process.Kill()
+		}()
+		scanner := bufio.NewScanner(out)
+		scanner.Split(bufio.ScanLines)
+		for len(channel) != size && scanner.Scan() {
+			line := scanner.Text()
+			channel <- line
+		}
+	}()
+	return channel, nil
 }
 
 // Destroy deletes stored logs for the specified application

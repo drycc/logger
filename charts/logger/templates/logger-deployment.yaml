@@ -57,6 +57,10 @@ spec:
             secretKeyRef:
               name: redis-creds
               key: password
+        - name: DRYCC_LOGS_MAXIMUM_LINES
+          value: "{{.Values.logsMaximumLines}}"
+        - name: DRYCC_LOGS_MAXIMUM_TIMEOUT
+          value: "{{.Values.logsMaximumTimeout}}"
         ports:
         - containerPort: 8088
           name: http

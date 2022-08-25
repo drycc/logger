@@ -4,6 +4,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -120,6 +121,7 @@ func TestRedisDestroy(t *testing.T) {
 	// Sleep for a bit because the adapter queues logs internally and writes them to Redis only when
 	// there are 50 queued up OR a 1 second timeout has been reached.
 	time.Sleep(time.Second * 2)
+	var ctx = context.Background()
 	// A redis list should exist for the app
 	exists, err := a.(*redisAdapter).redisClient.Exists(ctx, app).Result()
 	if err != nil {
@@ -139,5 +141,37 @@ func TestRedisDestroy(t *testing.T) {
 	}
 	if exists == 1 {
 		t.Error("Log redis list still exist, but was expected not to.")
+	}
+}
+
+func TestRedisChan(t *testing.T) {
+	sa, err := NewRedisStorageAdapter(1)
+	if err != nil {
+		t.Error(err)
+	}
+	sa.Start()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	channel, err := sa.Chan(ctx, app, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	//time.Sleep(time.Second * 1)
+	// Write a log to create the file
+	for i := 0; i < 10; i++ {
+		if err := sa.Write(app, fmt.Sprintf("Hello, log %d !", i)); err != nil {
+			t.Error(err)
+		}
+	}
+	for i := 0; i < 10; i++ {
+		line := <-channel
+		expected := fmt.Sprintf("Hello, log %d !", i)
+		if line != expected {
+			t.Error("The log content does not match the expectation.", expected, line)
+		}
+	}
+	if line := <-channel; line != "" {
+		t.Error("Expected timeout returned null, but found: ", line)
 	}
 }

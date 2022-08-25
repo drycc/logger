@@ -1,11 +1,13 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"testing"
+	"time"
 )
 
 func TestReadFromNonExistingApp(t *testing.T) {
@@ -70,6 +72,46 @@ func TestLogs(t *testing.T) {
 		if messages[i] != expectedMessage {
 			t.Errorf("expected: \"%s\", got \"%s\"", expectedMessage, messages[i])
 		}
+	}
+}
+
+func TestFileChan(t *testing.T) {
+	var err error
+	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot = "/tmp"
+	if err != nil {
+		t.Error(err)
+	}
+	//defer os.Remove(LogRoot)
+	sa, err := NewFileAdapter()
+	if err != nil {
+		t.Error(err)
+	}
+	if err := sa.Write(app, "Hello, log!"); err != nil {
+		t.Error(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	channel, err := sa.Chan(ctx, app, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(time.Second * 1)
+	// Write a log to create the file
+	for i := 0; i < 10; i++ {
+		if err := sa.Write(app, fmt.Sprintf("Hello, log %d !", i)); err != nil {
+			t.Error(err)
+		}
+	}
+	for i := 0; i < 10; i++ {
+		line := <-channel
+		expected := fmt.Sprintf("Hello, log %d !", i)
+		if line != expected {
+			t.Errorf("expected: %s\nactual: %s\n", expected, line)
+		}
+	}
+	if line := <-channel; line != "" {
+		t.Error("Expected timeout returned null, but found: ", line)
 	}
 }
 

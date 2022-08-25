@@ -1,6 +1,7 @@
 package log
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -18,6 +19,10 @@ func (a *stubStorageAdapter) Write(app string, message string) error {
 
 func (a *stubStorageAdapter) Read(app string, lines int) ([]string, error) {
 	return []string{}, nil
+}
+
+func (a *stubStorageAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
+	return make(chan string), nil
 }
 
 func (a *stubStorageAdapter) Destroy(app string) error {

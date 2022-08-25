@@ -11,8 +11,6 @@ import (
 	r "github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
-
 type message struct {
 	app         string
 	messageBody string
@@ -45,15 +43,19 @@ func newMessagePipeliner(bufferSize int, redisClient *r.ClusterClient, timeout t
 }
 
 func (mp *messagePipeliner) addMessage(message *message) {
-	if err := mp.pipeline.RPush(ctx, message.app, message.messageBody).Err(); err == nil {
+	var ctx = context.Background()
+	if err := mp.pipeline.Publish(ctx, message.app, message.messageBody).Err(); err != nil {
+		mp.errCh <- fmt.Errorf("Error adding Publish to %s to the pipeline: %s", message.app, err)
+	} else if err := mp.pipeline.RPush(ctx, message.app, message.messageBody).Err(); err != nil {
+		mp.errCh <- fmt.Errorf("Error adding rpush to %s to the pipeline: %s", message.app, err)
+	} else {
 		mp.queuedApps[message.app] = true
 		mp.messageCount++
-	} else {
-		mp.errCh <- fmt.Errorf("Error adding rpush to %s to the pipeline: %s", message.app, err)
 	}
 }
 
 func (mp messagePipeliner) execPipeline() {
+	var ctx = context.Background()
 	for app := range mp.queuedApps {
 		if err := mp.pipeline.LTrim(ctx, app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
 			mp.errCh <- fmt.Errorf("Error adding ltrim of %s to the pipeline: %s", app, err)
@@ -161,6 +163,7 @@ func (a *redisAdapter) Write(app string, messageBody string) error {
 
 // Read retrieves a specified number of log lines from an app-specific list in redis
 func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
+	var ctx = context.Background()
 	stringSliceCmd := a.redisClient.LRange(ctx, app, int64(-1*lines), -1)
 	result, err := stringSliceCmd.Result()
 	if err != nil {
@@ -172,8 +175,30 @@ func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
 	return nil, fmt.Errorf("Could not find logs for '%s'", app)
 }
 
+// Make Chan a pipeline to read logs all the time
+func (a *redisAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
+	channel := make(chan string, size)
+	go func() {
+		defer close(channel)
+		subscribe := a.redisClient.Subscribe(context.Background(), app)
+		defer subscribe.Close()
+		subscriptions := subscribe.Channel()
+		for len(channel) != size {
+			select {
+			case <-ctx.Done():
+				return
+			case message := <-subscriptions:
+				channel <- message.Payload
+				break
+			}
+		}
+	}()
+	return channel, nil
+}
+
 // Destroy deletes an app-specific list from redis
 func (a *redisAdapter) Destroy(app string) error {
+	var ctx = context.Background()
 	return a.redisClient.Del(ctx, app).Err()
 }
 

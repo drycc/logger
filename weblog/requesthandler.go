@@ -16,18 +16,18 @@ import (
 )
 
 var (
-	DRYCC_LOGS_MAXIMUM_LINES   = 300
-	DRYCC_LOGS_MAXIMUM_TIMEOUT = 300
+	DryccLogsMaximumLines   = 300
+	DryccLogsMaximumTimeout = 300
 )
 
 func init() {
 	lines, err := strconv.Atoi(os.Getenv("DRYCC_LOGS_MAXIMUM_LINES"))
 	if err == nil && lines > 0 {
-		DRYCC_LOGS_MAXIMUM_LINES = lines
+		DryccLogsMaximumLines = lines
 	}
 	timeout, err := strconv.Atoi(os.Getenv("DRYCC_LOGS_MAXIMUM_TIMEOUT"))
 	if err == nil && timeout > 0 {
-		DRYCC_LOGS_MAXIMUM_TIMEOUT = timeout
+		DryccLogsMaximumTimeout = timeout
 	}
 }
 
@@ -59,13 +59,13 @@ func (h requestHandler) getLogs(w http.ResponseWriter, r *http.Request) {
 	logLinesStr := r.URL.Query().Get("log_lines")
 	if logLinesStr == "" {
 		log.Printf("The number of lines to return was not specified. Defaulting to 100 lines.")
-		logLines = DRYCC_LOGS_MAXIMUM_LINES
+		logLines = DryccLogsMaximumLines
 	} else {
 		var err error
 		logLines, err = strconv.Atoi(logLinesStr)
-		if err != nil || logLines > DRYCC_LOGS_MAXIMUM_LINES || logLines < 0 {
+		if err != nil || logLines > DryccLogsMaximumLines || logLines < 0 {
 			log.Printf("The specified number of log lines was invalid. Defaulting to 100 lines.")
-			logLines = DRYCC_LOGS_MAXIMUM_LINES
+			logLines = DryccLogsMaximumLines
 		}
 	}
 	logs, err := h.storageAdapter.Read(app, logLines)
@@ -88,8 +88,8 @@ func (h requestHandler) getLogs(w http.ResponseWriter, r *http.Request) {
 	follow, err := strconv.ParseBool(r.URL.Query().Get("follow"))
 	if err == nil && follow {
 		timeout, err := strconv.Atoi(r.URL.Query().Get("timeout"))
-		if err != nil || timeout > DRYCC_LOGS_MAXIMUM_TIMEOUT || timeout <= 0 {
-			timeout = DRYCC_LOGS_MAXIMUM_TIMEOUT
+		if err != nil || timeout > DryccLogsMaximumTimeout || timeout <= 0 {
+			timeout = DryccLogsMaximumTimeout
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 		defer cancel()

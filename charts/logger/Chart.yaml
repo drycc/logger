@@ -1,12 +1,12 @@
 name: logger
 home: https://github.com/drycc/logger
-appVersion: v2
+apiVersion: v2
 dependencies:
   - name: common
-    repository: https://charts.drycc.cc/stable
-    version: 1.x.x
+    repository: oci://registry.drycc.cc/charts
+    version: ~1.1.1
 description: Log buffer used by Drycc Workflow.
 maintainers:
   - name: Drycc Team
     email: engineering@drycc.com
-version: v1.1.0
+version: v1.0.0

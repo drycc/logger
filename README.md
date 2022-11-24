@@ -62,36 +62,18 @@ DEV_REGISTRY=myhost:5000 make push
 * `make uninstall` - Uninstall logger from a kubernetes cluster
 
 ### Architecture Diagram
+
 ```
-                        ┌────────┐
-                        │ Router │                  ┌────────┐
-                        └────────┘                  │ Logger │
-                            │                       └────────┘
-                        Log file                        │
-                            │                           │
-                            ▼                           ▼
-┌────────┐             ┌─────────┐    logs/metrics   ┌──────────────┐
-│App Logs│──Log File──▶│ fluentd │───────topics─────▶│ Redis Stream │
-└────────┘             └─────────┘                   └──────────────┘
-                                                        │
-                                                        │
-┌─────────────┐                                         │
-│ HOST        │                                         ▼
-│  Telegraf   │───┐                                ┌────────┐
-└─────────────┘   │                                │Telegraf│
-                  │                                └────────┘
-┌─────────────┐   │                                    │
-│ HOST        │   │    ┌───────────┐                   │
-│  Telegraf   │───┼───▶│ InfluxDB  │◀────Wire ─────────┘
-└─────────────┘   │    └───────────┘   Protocol
-                  │          ▲
-┌─────────────┐   │          │
-│ HOST        │   │          ▼
-│  Telegraf   │───┘    ┌──────────┐
-└─────────────┘        │ Grafana  │
-                       └──────────┘
+┌──────────┐             ┌─────────┐  logs/metrics   ┌───────────────┐
+│ App Logs │──Log File──▶│ Fluentd │─────Topics─────▶│ Redis XStream │
+└──────────┘             └─────────┘                 └───────────────┘
+                                                             │
+                                                             │
+                         ┌─────────┐       logs/xstream      │
+                         │  Logger │◀----------Read----------┘
+                         └─────────┘
 ```
 
 [issues]: https://github.com/drycc/logger/issues
 [prs]: https://github.com/drycc/logger/pulls
-[v2.18]: https://github.com/drycc/workflow/releases/tag/v2.18.0
+[workflow]: https://github.com/drycc/workflow

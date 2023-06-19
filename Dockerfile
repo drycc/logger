@@ -6,7 +6,7 @@ RUN export GO111MODULE=on \
   && CGO_ENABLED=0 init-stack go build -ldflags "${LDFLAGS}" -o /usr/local/bin/logger .
 
 
-FROM registry.drycc.cc/drycc/base:bullseye
+FROM registry.drycc.cc/drycc/base:bookworm
 
 ENV DRYCC_UID=1001 \
   DRYCC_GID=1001 \

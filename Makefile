@@ -60,11 +60,11 @@ build-with-container: check-docker
 	${DEV_ENV_CMD} make build-binary
 
 docker-build: check-docker
-	docker build ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} .
+	docker build ${DOCKER_BUILD_FLAGS} --build-arg CODENAME=${CODENAME} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} .
 	docker tag ${IMAGE} ${MUTABLE_IMAGE}
 
 docker-buildx:
-	docker buildx build --platform ${PLATFORM} ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} . --push
+	docker buildx build --build-arg CODENAME=${CODENAME} --platform ${PLATFORM} ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} . --push
 
 clean: check-docker
 	docker rmi $(IMAGE)

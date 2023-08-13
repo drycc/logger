@@ -16,7 +16,6 @@ type Message struct {
 	Log        string     `json:"log"`
 	Stream     string     `json:"stream"`
 	Kubernetes Kubernetes `json:"kubernetes"`
-	Docker     Docker     `json:"docker"`
 	Time       time.Time  `json:"time"`
 }
 
@@ -28,9 +27,4 @@ type Kubernetes struct {
 	ContainerName string            `json:"container_name"`
 	Labels        map[string]string `json:"labels"`
 	Host          string            `json:"host"`
-}
-
-// Docker specific log message fields
-type Docker struct {
-	ContainerID string `json:"container_id"`
 }

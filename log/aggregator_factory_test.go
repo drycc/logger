@@ -13,19 +13,19 @@ type stubStorageAdapter struct {
 func (a *stubStorageAdapter) Start() {
 }
 
-func (a *stubStorageAdapter) Write(app string, message string) error {
+func (a *stubStorageAdapter) Write(string, string) error {
 	return nil
 }
 
-func (a *stubStorageAdapter) Read(app string, lines int) ([]string, error) {
+func (a *stubStorageAdapter) Read(string, int) ([]string, error) {
 	return []string{}, nil
 }
 
-func (a *stubStorageAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
+func (a *stubStorageAdapter) Chan(context.Context, string, int) (chan string, error) {
 	return make(chan string), nil
 }
 
-func (a *stubStorageAdapter) Destroy(app string) error {
+func (a *stubStorageAdapter) Destroy(string) error {
 	return nil
 }
 

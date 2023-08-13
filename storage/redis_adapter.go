@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	r "github.com/go-redis/redis/v8"
+	r "github.com/redis/go-redis/v9"
 )
 
 type message struct {
@@ -58,10 +58,12 @@ func (mp messagePipeliner) execPipeline() {
 	var ctx = context.Background()
 	for app := range mp.queuedApps {
 		if err := mp.pipeline.LTrim(ctx, app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
+			fmt.Printf("Error adding ltrim of %s to the pipeline: %s", app, err)
 			mp.errCh <- fmt.Errorf("Error adding ltrim of %s to the pipeline: %s", app, err)
 		}
 	}
 	if _, err := mp.pipeline.Exec(ctx); err != nil {
+		fmt.Printf("Error executing pipeline: %s", err)
 		mp.errCh <- fmt.Errorf("Error executing pipeline: %s", err)
 	}
 }
@@ -135,7 +137,6 @@ func (a *redisAdapter) Start() {
 		errCh := make(chan error)
 		mp := newMessagePipeliner(a.bufferSize, a.redisClient, a.config.PipelineTimeout, errCh)
 		go func() {
-			defer mp.pipeline.Close()
 			for {
 				select {
 				case err := <-errCh:
@@ -145,10 +146,10 @@ func (a *redisAdapter) Start() {
 				case message := <-a.messageChannel:
 					mp.addMessage(message)
 					if mp.messageCount == a.config.PipelineLength {
-						go mp.execPipeline()
+						mp.execPipeline()
 					}
 				case <-mp.timeoutTicker.C:
-					go mp.execPipeline()
+					mp.execPipeline()
 				}
 			}
 		}()

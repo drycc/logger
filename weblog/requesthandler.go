@@ -41,7 +41,7 @@ func newRequestHandler(storageAdapter storage.Adapter) *requestHandler {
 	}
 }
 
-func (h requestHandler) getHealthz(w http.ResponseWriter, r *http.Request) {
+func (h requestHandler) getHealthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 

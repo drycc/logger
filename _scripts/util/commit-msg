@@ -16,7 +16,7 @@ MESSAGE[1]="file"
 i=1 # the first array variable is at index 1
 while read -r line
 do
-	MESSAGE[$i]=$line
+	MESSAGE[i]=$line
         (( i++ ))
 done < "$1"
 

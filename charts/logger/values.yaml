@@ -16,16 +16,15 @@ nodeAffinityPreset:
   - "true"
 
 podAffinityPreset:
-  key: "security"
   type: ""
-  values:
-  - "drycc-security"
+  extraMatchLabels:
+    security: "drycc-security"
 
 podAntiAffinityPreset:
-  key: "app"
   type: "soft"
-  values:
-  - "drycc-logger"
+  extraMatchLabels:
+    app: "drycc-logger"
+
 # logger replicas
 replicas: 1
 # Service

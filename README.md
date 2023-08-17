@@ -8,8 +8,6 @@ Drycc - A Fork of Drycc Workflow
 
 Drycc (pronounced DAY-iss) Workflow is an open source Platform as a Service (PaaS) that adds a developer-friendly layer to any [Kubernetes](http://kubernetes.io) cluster, making it easy to deploy and manage applications on your own servers.
 
-![Drycc Graphic](https://getdrycc.blob.core.windows.net/get-drycc/drycc-graphic-small.png)
-
 For more information about the Drycc Workflow, please visit the main project page at https://github.com/drycc/workflow.
 
 We welcome your input! If you have feedback, please [submit an issue][issues]. If you'd like to participate in development, please read the "Development" section below and [submit a pull request][prs].
@@ -19,7 +17,7 @@ A system logger for use in the [Drycc Workflow](https://drycc.com/workflow/) ope
 
 The new v2 logger implementation has seen a simplification from the last rewrite. While it still uses much of that code it no longer depends on `etcd`. Instead, we will use kubernetes service discovery to determine where logger is running.
 
-We have also decided to not use `logspout` as the mechanism to get logs from each container to the `logger` component. Now we will use [fluentd](http://fluentd.org) which is a widely supported logging framework with hundreds of plugins. This will allow the end user to configure multiple destinations such as Elastic Search and other Syslog compatible endpoints like [papertrail](http://papertrailapp.com).
+We have also decided to not use `logspout` as the mechanism to get logs from each container to the `logger` component. Now we will use [fluentbit](https://fluentbit.io) which is a widely supported logging framework with hundreds of plugins. This will allow the end user to configure multiple destinations such as Elastic Search and other Syslog compatible endpoints like [papertrail](http://papertrailapp.com).
 
 ## Configuration
 The following environment variables can be used to configure logger:
@@ -64,14 +62,14 @@ DEV_REGISTRY=myhost:5000 make push
 ### Architecture Diagram
 
 ```
-┌──────────┐             ┌─────────┐  logs/metrics   ┌───────────────┐
-│ App Logs │──Log File──▶│ Fluentd │─────Topics─────▶│ Redis XStream │
-└──────────┘             └─────────┘                 └───────────────┘
-                                                             │
-                                                             │
-                         ┌─────────┐       logs/xstream      │
-                         │  Logger │◀----------Read----------┘
-                         └─────────┘
+┌──────────┐             ┌───────────┐  logs/metrics   ┌───────────────┐
+│ App Logs │──Log File──▶│ FluentBit │─────Topics─────▶│ Redis XStream │
+└──────────┘             └───────────┘                 └───────────────┘
+                                                               │
+                                                               │
+                         ┌───────────┐       logs/xstream      │
+                         │   Logger  │◀----------Read----------┘
+                         └───────────┘
 ```
 
 [issues]: https://github.com/drycc/logger/issues

@@ -36,7 +36,7 @@ The following environment variables can be used to configure logger:
 | DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS   | 1             |
 
 ## Development
-The only assumption this project makes about your environment is that you have a working docker host to build the image against.
+The only assumption this project makes about your environment is that you have a working podman to build the image against.
 
 ### Building binary and image
 To build the binary and image run the following make command:
@@ -55,7 +55,7 @@ DEV_REGISTRY=myhost:5000 make push
 ```
 
 ### Kubernetes interactions
-* `make install` - Install the recently built docker image into the kubernetes cluster
+* `make install` - Install the recently built container image into the kubernetes cluster
 * `make upgrade` - Upgrade a currently installed image
 * `make uninstall` - Uninstall logger from a kubernetes cluster
 

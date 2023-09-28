@@ -5,7 +5,6 @@ import "time"
 // Example log message JSON:
 //
 // {"log"=>"2016/05/31 01:34:43 10.164.1.1 GET / - 5074209722772702441\n", "stream"=>"stderr",
-// "docker"=>{"container_id"=>"6a9069435788a05531ee2b9afbcdc73a22018af595f3203cb67e06f50103bf5f"},
 // "kubernetes"=>{"namespace_name"=>"foo", "pod_id"=>"34ebc234-2423-11e6-94aa-42010a800021",
 // "pod_name"=>"foo-v2-web-2ggow", "container_name"=>"foo-web", "labels"=>{"app"=>"foo",
 // "heritage"=>"drycc", "type"=>"web", "version"=>"v2"},

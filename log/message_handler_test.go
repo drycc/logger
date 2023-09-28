@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	validControllerMessage = `{"log": "INFO [foo]: admin deployed 2fd9226", "time": "2016-10-18T20:29:38+00:00", "stream": "stderr", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "drycc-controller", "labels": {"app": "foo",
+	validControllerMessage = `{"log": "INFO [foo]: admin deployed 2fd9226", "time": "2016-10-18T20:29:38+00:00", "stream": "stderr", "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "podName", "container_name": "drycc-controller", "labels": {"app": "foo",
 "heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
-	validAppMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952-nzf60", "container_name": "foo-web", "labels": {"app": "foo",
+	validAppMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952-nzf60", "container_name": "foo-web", "labels": {"app": "foo",
 "heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
-	badPodNameMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "docker": {"container_id": "containerId"}, "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952", "container_name": "foo-web", "labels": {"app": "foo",
+	badPodNameMessage = `{"log": "test message", "stream": "stderr", "time": "2016-10-18T20:29:38+00:00", "kubernetes": {"namespace_name": "foo", "pod_id": "podId", "pod_name": "foo-web-845861952", "container_name": "foo-web", "labels": {"app": "foo",
 "heritage": "drycc", "type": "web", "version": "v2"}, "host": "host"}}`
 
 	badjson = `{"log":}`

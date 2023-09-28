@@ -16,13 +16,11 @@ PLATFORM ?= linux/amd64,linux/arm64
 DEV_ENV_IMAGE := ${DEV_REGISTRY}/drycc/go-dev
 DEV_ENV_WORK_DIR := /opt/drycc/go/src/${REPO_PATH}
 DEV_ENV_OPTS := --rm -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
-DEV_ENV_CMD := docker run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
-DEV_ENV_CMD_INT := docker run -it ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_ENV_CMD := podman run ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
+DEV_ENV_CMD_INT := podman run -it ${DEV_ENV_OPTS} ${DEV_ENV_IMAGE}
 LDFLAGS := "-s -X main.version=${VERSION}"
 
 BINARY_DEST_DIR = rootfs/opt/logger/sbin
-
-DOCKER_HOST = $(shell echo $$DOCKER_HOST)
 BUILD_TAG ?= git-$(shell git rev-parse --short HEAD)
 SHORT_NAME ?= logger
 DRYCC_REGISTRY ?= ${DEV_REGISTRY}
@@ -32,49 +30,46 @@ include versioning.mk
 
 SHELL_SCRIPTS = $(wildcard _scripts/util/*)
 
-check-docker:
-	@if [ -z $$(which docker) ]; then \
-	  echo "Missing docker client which is required for development"; \
+check-podman:
+	@if [ -z $$(which podman) ]; then \
+	  echo "Missing podman client which is required for development"; \
 	  exit 2; \
 	fi
 
 # Allow developers to step into the containerized development environment
-dev: check-docker
+dev: check-podman
 	${DEV_ENV_CMD_INT} bash
 
 # Containerized dependency resolution
-bootstrap: check-docker
+bootstrap: check-podman
 	${DEV_ENV_CMD} go mod vendor
 
-# This is so you can build the binary without using docker
+# This is so you can build the binary without using podman
 build-binary:
 	CGO_ENABLED=0 go build -ldflags ${LDFLAGS} -o $(BINARY_DEST_DIR)/logger .
 
-build: docker-build
+build: podman-build
 build-without-container: build-binary build-image
-push: docker-push
+push: podman-push
 
 # Containerized build of the binary
-build-with-container: check-docker
+build-with-container: check-podman
 	mkdir -p ${BINARY_DEST_DIR}
 	${DEV_ENV_CMD} make build-binary
 
-docker-build: check-docker
-	docker build ${DOCKER_BUILD_FLAGS} --build-arg CODENAME=${CODENAME} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} .
-	docker tag ${IMAGE} ${MUTABLE_IMAGE}
+podman-build: check-podman
+	podman build --build-arg CODENAME=${CODENAME} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} .
+	podman tag ${IMAGE} ${MUTABLE_IMAGE}
 
-docker-buildx:
-	docker buildx build --build-arg CODENAME=${CODENAME} --platform ${PLATFORM} ${DOCKER_BUILD_FLAGS} -t ${IMAGE} --build-arg LDFLAGS=${LDFLAGS} . --push
-
-clean: check-docker
-	docker rmi $(IMAGE)
+clean: check-podman
+	podman rmi $(IMAGE)
 
 test: test-style test-unit
 
 test-cover:
 	_scripts/tests.sh test-cover "${DEV_ENV_OPTS}" "${DEV_ENV_IMAGE}"
 
-test-style: check-docker
+test-style: check-podman
 	${DEV_ENV_CMD} make style-check
 
 style-check:

@@ -4,18 +4,18 @@ DEV_ENV_OPTS=$2
 DEV_ENV_IMAGE=$3
 
 function start-test-redis() {
-  docker run --name test-logger-redis -d redis:latest
+  podman run --name test-logger-redis -d docker.io/library/redis:latest
 }
 
 function stop-test-redis() {
-  docker kill test-logger-redis
-  docker rm test-logger-redis
+  podman kill test-logger-redis
+  podman rm test-logger-redis
 }
 
 function test-cover() {
   start-test-redis
-  REDIS_IP=$(docker inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
-  docker run ${DEV_ENV_OPTS} \
+  REDIS_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
+  podman run ${DEV_ENV_OPTS} \
     -e DRYCC_REDIS_ADDRS=${REDIS_IP}:6379 \
     -it \
     ${DEV_ENV_IMAGE} \
@@ -25,9 +25,9 @@ function test-cover() {
 
 function test-unit() {
   start-test-redis test --cover --race -v
-  REDIS_IP=$(docker inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
+  REDIS_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
   echo "redis ip: $REDIS_IP"
-  docker run ${DEV_ENV_OPTS} \
+  podman run ${DEV_ENV_OPTS} \
     -e DRYCC_REDIS_ADDRS=${REDIS_IP}:6379 \
     -it \
     ${DEV_ENV_IMAGE} \

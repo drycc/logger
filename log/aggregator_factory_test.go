@@ -39,7 +39,7 @@ func (a *stubStorageAdapter) Stop() {
 func TestGetUsingInvalidValues(t *testing.T) {
 	_, err := NewAggregator("bogus", &stubStorageAdapter{})
 	if err == nil || err.Error() != fmt.Sprintf("unrecognized aggregator type: '%s'", "bogus") {
-		t.Error("Did not receive expected error message")
+		t.Error("did not receive expected error message")
 	}
 }
 

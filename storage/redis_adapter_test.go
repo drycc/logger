@@ -19,10 +19,10 @@ func TestRedisReadFromNonExistingApp(t *testing.T) {
 	// No logs have been written; there should be no redis list for app
 	messages, err := a.Read(app, 10)
 	if messages != nil {
-		t.Error("Expected no messages, but got some")
+		t.Error("expected no messages, but got some")
 	}
-	if err == nil || err.Error() != fmt.Sprintf("Could not find logs for '%s'", app) {
-		t.Error("Did not receive expected error message")
+	if err == nil || err.Error() != fmt.Sprintf("could not find logs for '%s'", app) {
+		t.Error("did not receive expected error message")
 	}
 }
 
@@ -31,10 +31,10 @@ func TestRedisWithBadBufferSizes(t *testing.T) {
 	for _, size := range []int{-1, 0} {
 		a, err := NewRedisStorageAdapter(size)
 		if a != nil {
-			t.Error("Expected no storage adapter, but got one")
+			t.Error("expected no storage adapter, but got one")
 		}
-		if err == nil || err.Error() != fmt.Sprintf("Invalid buffer size: %d", size) {
-			t.Error("Did not receive expected error message")
+		if err == nil || err.Error() != fmt.Sprintf("invalid buffer size: %d", size) {
+			t.Error("did not receive expected error message")
 		}
 	}
 }
@@ -168,10 +168,10 @@ func TestRedisChan(t *testing.T) {
 		line := <-channel
 		expected := fmt.Sprintf("Hello, log %d !", i)
 		if line != expected {
-			t.Error("The log content does not match the expectation.", expected, line)
+			t.Error("the log content does not match the expectation.", expected, line)
 		}
 	}
 	if line := <-channel; line != "" {
-		t.Error("Expected timeout returned null, but found: ", line)
+		t.Error("expected timeout returned null, but found: ", line)
 	}
 }

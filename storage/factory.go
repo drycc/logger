@@ -9,7 +9,7 @@ type errUnrecognizedStorageAdapterType struct {
 }
 
 func (e errUnrecognizedStorageAdapterType) Error() string {
-	return fmt.Sprintf("Unrecognized storage adapter type: %s", e.adapterType)
+	return fmt.Sprintf("unrecognized storage adapter type: %s", e.adapterType)
 }
 
 // NewAdapter returns a pointer to an appropriate implementation of the Adapter interface, as

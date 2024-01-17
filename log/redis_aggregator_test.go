@@ -23,7 +23,7 @@ func TestAggregator(t *testing.T) {
 	err = aggregator.Stop()
 	assert.NoError(t, err)
 	stopErr := <-stoppedCh
-	assert.NoError(t, stopErr, "Aggregator stopped with error")
+	assert.NoError(t, stopErr, "aggregator stopped with error")
 }
 
 func generateTestData(ctx context.Context, count int, message map[string]interface{}) {

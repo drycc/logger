@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -12,7 +11,7 @@ import (
 
 func TestReadFromNonExistingApp(t *testing.T) {
 	var err error
-	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = os.MkdirTemp("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
@@ -25,16 +24,16 @@ func TestReadFromNonExistingApp(t *testing.T) {
 	// No logs have been writter; there should be no ringBuffer for app
 	messages, err := a.Read(app, 10)
 	if messages != nil {
-		t.Error("Expected no messages, but got some")
+		t.Error("expected no messages, but got some")
 	}
-	if err == nil || err.Error() != fmt.Sprintf("Could not find logs for '%s'", app) {
-		t.Error("Did not receive expected error message")
+	if err == nil || err.Error() != fmt.Sprintf("could not find logs for '%s'", app) {
+		t.Error("did not receive expected error message")
 	}
 }
 
 func TestLogs(t *testing.T) {
 	var err error
-	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = os.MkdirTemp("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,7 +76,7 @@ func TestLogs(t *testing.T) {
 
 func TestFileChan(t *testing.T) {
 	var err error
-	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = os.MkdirTemp("", "log-tests")
 	LogRoot = "/tmp"
 	if err != nil {
 		t.Error(err)
@@ -111,13 +110,13 @@ func TestFileChan(t *testing.T) {
 		}
 	}
 	if line := <-channel; line != "" {
-		t.Error("Expected timeout returned null, but found: ", line)
+		t.Error("expected timeout returned null, but found: ", line)
 	}
 }
 
 func TestDestroy(t *testing.T) {
 	var err error
-	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = os.MkdirTemp("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}
@@ -158,7 +157,7 @@ func TestDestroy(t *testing.T) {
 
 func TestReopen(t *testing.T) {
 	var err error
-	LogRoot, err = ioutil.TempDir("", "log-tests")
+	LogRoot, err = os.MkdirTemp("", "log-tests")
 	if err != nil {
 		t.Error(err)
 	}

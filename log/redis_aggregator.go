@@ -34,10 +34,7 @@ func newRedisAggregator(storageAdapter storage.Adapter) Aggregator {
 }
 
 func (a *redisAggregator) messageMainLoop(redisAddr string) {
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     redisAddr,
-		Password: a.cfg.RedisPassword,
-	})
+	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr, Password: a.cfg.RedisPassword})
 	redisClient.XGroupCreateMkStream(a.ctx, a.cfg.RedisStream, a.cfg.RedisStreamGroup, "0")
 	xReadGroupArgs := redis.XReadGroupArgs{
 		Group:    a.cfg.RedisStreamGroup,
@@ -53,7 +50,10 @@ func (a *redisAggregator) messageMainLoop(redisAddr string) {
 			return
 		default:
 			entries, err := redisClient.XReadGroup(a.ctx, &xReadGroupArgs).Result()
-			if err == nil && len(entries) > 0 {
+			if err != nil {
+				redisClient.Close()
+				redisClient = redis.NewClient(&redis.Options{Addr: redisAddr, Password: a.cfg.RedisPassword})
+			} else if err == nil && len(entries) > 0 {
 				for i := 0; i < len(entries[0].Messages); i++ {
 					a.handle(entries[0].Messages[i].Values)
 					redisClient.XAck(a.ctx, a.cfg.RedisStream, a.cfg.RedisStreamGroup, entries[0].Messages[i].ID)

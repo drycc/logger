@@ -24,6 +24,7 @@ func newMessage(app string, messageBody string) *message {
 }
 
 type messagePipeliner struct {
+	timeout       time.Duration
 	bufferSize    int
 	messageCount  int
 	pipeline      r.Pipeliner
@@ -34,6 +35,7 @@ type messagePipeliner struct {
 
 func newMessagePipeliner(bufferSize int, redisClient *r.ClusterClient, timeout time.Duration, errCh chan error) *messagePipeliner {
 	return &messagePipeliner{
+		timeout:       timeout,
 		bufferSize:    bufferSize,
 		pipeline:      redisClient.Pipeline(),
 		timeoutTicker: time.NewTicker(timeout),
@@ -43,11 +45,12 @@ func newMessagePipeliner(bufferSize int, redisClient *r.ClusterClient, timeout t
 }
 
 func (mp *messagePipeliner) addMessage(message *message) {
-	var ctx = context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), mp.timeout)
+	defer cancel()
 	if err := mp.pipeline.Publish(ctx, message.app, message.messageBody).Err(); err != nil {
-		mp.errCh <- fmt.Errorf("Error adding Publish to %s to the pipeline: %s", message.app, err)
+		mp.errCh <- fmt.Errorf("error adding publish to %s to the pipeline: %s", message.app, err)
 	} else if err := mp.pipeline.RPush(ctx, message.app, message.messageBody).Err(); err != nil {
-		mp.errCh <- fmt.Errorf("Error adding rpush to %s to the pipeline: %s", message.app, err)
+		mp.errCh <- fmt.Errorf("error adding rpush to %s to the pipeline: %s", message.app, err)
 	} else {
 		mp.queuedApps[message.app] = true
 		mp.messageCount++
@@ -55,41 +58,46 @@ func (mp *messagePipeliner) addMessage(message *message) {
 }
 
 func (mp messagePipeliner) execPipeline() {
-	var ctx = context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), mp.timeout)
+	defer cancel()
 	for app := range mp.queuedApps {
 		if err := mp.pipeline.LTrim(ctx, app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
-			fmt.Printf("Error adding ltrim of %s to the pipeline: %s", app, err)
-			mp.errCh <- fmt.Errorf("Error adding ltrim of %s to the pipeline: %s", app, err)
+			log.Printf("error adding ltrim of %s to the pipeline: %s", app, err)
+			mp.errCh <- fmt.Errorf("error adding ltrim of %s to the pipeline: %s", app, err)
 		}
 	}
 	if _, err := mp.pipeline.Exec(ctx); err != nil {
-		fmt.Printf("Error executing pipeline: %s", err)
-		mp.errCh <- fmt.Errorf("Error executing pipeline: %s", err)
+		log.Printf("error executing pipeline: %s", err)
+		mp.errCh <- fmt.Errorf("error executing pipeline: %s", err)
 	}
 }
 
-func newRedisClusterSlots(addrs []string) func(context.Context) ([]r.ClusterSlot, error) {
-	return func(context.Context) ([]r.ClusterSlot, error) {
-		const slotsSize = 16383
-		var size = len(addrs)
-		var slotsRange = slotsSize / size
-
-		var slots []r.ClusterSlot
-
-		for index, addr := range addrs {
-			start := slotsRange * index
-			end := start + slotsRange
-			if (slotsSize - end) < slotsRange {
-				end = slotsSize
+func newClusterClient(cfg *redisConfig) (*r.ClusterClient, error) {
+	addrs := strings.Split(cfg.Addrs, ",")
+	sort.Strings(addrs)
+	return r.NewClusterClient(&r.ClusterOptions{
+		ClusterSlots: func(context.Context) ([]r.ClusterSlot, error) {
+			const slotsSize = 16383
+			var size = len(addrs)
+			var slotsRange = slotsSize / size
+			var slots []r.ClusterSlot
+			for index, addr := range addrs {
+				start := slotsRange * index
+				end := start + slotsRange
+				if (slotsSize - end) < slotsRange {
+					end = slotsSize
+				}
+				slots = append(slots, r.ClusterSlot{
+					Start: start,
+					End:   end,
+					Nodes: []r.ClusterNode{{Addr: addr}},
+				})
 			}
-			slots = append(slots, r.ClusterSlot{
-				Start: start,
-				End:   end,
-				Nodes: []r.ClusterNode{{Addr: addr}},
-			})
-		}
-		return slots, nil
-	}
+			return slots, nil
+		},
+		Password:      cfg.Password, // "" == no password
+		RouteRandomly: true,
+	}), nil
 }
 
 type redisAdapter struct {
@@ -104,25 +112,20 @@ type redisAdapter struct {
 // NewRedisStorageAdapter returns a pointer to a new instance of a redis-based storage.Adapter.
 func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 	if bufferSize <= 0 {
-		return nil, fmt.Errorf("Invalid buffer size: %d", bufferSize)
+		return nil, fmt.Errorf("invalid buffer size: %d", bufferSize)
 	}
 	cfg, err := parseConfig(appName)
 	if err != nil {
-		log.Fatalf("config error: %s: ", err)
+		return nil, err
 	}
+	client, err := newClusterClient(cfg)
 	if err != nil {
 		return nil, err
 	}
-	addrs := strings.Split(cfg.Addrs, ",")
-	sort.Strings(addrs)
 	rsa := &redisAdapter{
-		bufferSize: bufferSize,
-		redisClient: r.NewClusterClient(&r.ClusterOptions{
-			ClusterSlots:  newRedisClusterSlots(addrs),
-			Password:      cfg.Password, // "" == no password
-			RouteRandomly: true,
-		}),
-		messageChannel: make(chan *message),
+		bufferSize:     bufferSize,
+		redisClient:    client,
+		messageChannel: make(chan *message, bufferSize),
 		stopCh:         make(chan struct{}),
 		config:         cfg,
 	}
@@ -134,13 +137,12 @@ func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 func (a *redisAdapter) Start() {
 	if !a.started {
 		a.started = true
-		errCh := make(chan error)
-		mp := newMessagePipeliner(a.bufferSize, a.redisClient, a.config.PipelineTimeout, errCh)
+		mp := newMessagePipeliner(a.bufferSize, a.redisClient, a.config.PipelineTimeout, make(chan error, a.bufferSize))
 		go func() {
 			for {
 				select {
-				case err := <-errCh:
-					log.Println(err)
+				case err := <-mp.errCh:
+					log.Printf("select pipeline message err: %v", err)
 				case <-a.stopCh:
 					return
 				case message := <-a.messageChannel:
@@ -164,7 +166,8 @@ func (a *redisAdapter) Write(app string, messageBody string) error {
 
 // Read retrieves a specified number of log lines from an app-specific list in redis
 func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
-	var ctx = context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), a.config.PipelineTimeout)
+	defer cancel()
 	stringSliceCmd := a.redisClient.LRange(ctx, app, int64(-1*lines), -1)
 	result, err := stringSliceCmd.Result()
 	if err != nil {
@@ -173,7 +176,7 @@ func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
 	if len(result) > 0 {
 		return result, nil
 	}
-	return nil, fmt.Errorf("Could not find logs for '%s'", app)
+	return nil, fmt.Errorf("could not find logs for '%s'", app)
 }
 
 // Make Chan a pipeline to read logs all the time
@@ -190,7 +193,6 @@ func (a *redisAdapter) Chan(ctx context.Context, app string, size int) (chan str
 				return
 			case message := <-subscriptions:
 				channel <- message.Payload
-				break
 			}
 		}
 	}()
@@ -199,7 +201,8 @@ func (a *redisAdapter) Chan(ctx context.Context, app string, size int) (chan str
 
 // Destroy deletes an app-specific list from redis
 func (a *redisAdapter) Destroy(app string) error {
-	var ctx = context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), a.config.PipelineTimeout)
+	defer cancel()
 	return a.redisClient.Del(ctx, app).Err()
 }
 

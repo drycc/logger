@@ -71,7 +71,7 @@ func (h requestHandler) getLogs(w http.ResponseWriter, r *http.Request) {
 	logs, err := h.storageAdapter.Read(app, logLines)
 	if err != nil {
 		log.Println(err)
-		if strings.HasPrefix(err.Error(), "Could not find logs for") {
+		if strings.HasPrefix(err.Error(), "could not find logs for") {
 			w.WriteHeader(http.StatusNoContent)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)

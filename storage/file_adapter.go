@@ -65,7 +65,7 @@ func (a *fileAdapter) Read(app string, lines int) ([]string, error) {
 		return nil, err
 	}
 	if !exists {
-		return nil, fmt.Errorf("Could not find logs for '%s'", app)
+		return nil, fmt.Errorf("could not find logs for '%s'", app)
 	}
 	logBytes, err := exec.Command("tail", "-n", strconv.Itoa(lines), filePath).Output()
 	if err != nil {
@@ -83,7 +83,7 @@ func (a *fileAdapter) Chan(ctx context.Context, app string, size int) (chan stri
 		return nil, err
 	}
 	if !exists {
-		return nil, fmt.Errorf("Could not find logs for '%s'", app)
+		return nil, fmt.Errorf("could not find logs for '%s'", app)
 	}
 
 	channel := make(chan string, size)
@@ -91,10 +91,10 @@ func (a *fileAdapter) Chan(ctx context.Context, app string, size int) (chan stri
 		defer close(channel)
 		cmd := exec.Command("tail", "-n", "0", "-f", filePath)
 		out, err := cmd.StdoutPipe()
-		defer out.Close()
 		if err != nil {
 			panic(err)
 		}
+		defer out.Close()
 		cmd.Start()
 		go func() {
 			<-ctx.Done()

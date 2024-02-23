@@ -1,12 +1,12 @@
 module github.com/drycc/logger
 
-go 1.20
+go 1.22
 
 require (
-	github.com/google/uuid v1.3.0
-	github.com/gorilla/mux v1.8.0
+	github.com/google/uuid v1.6.0
+	github.com/gorilla/mux v1.8.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/redis/go-redis/v9 v9.0.5
+	github.com/redis/go-redis/v9 v9.5.1
 	github.com/stretchr/testify v1.8.4
 )
 

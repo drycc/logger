@@ -29,6 +29,8 @@ function test-unit() {
   echo "redis ip: $REDIS_IP"
   podman run ${DEV_ENV_OPTS} \
     -e DRYCC_REDIS_ADDRS=${REDIS_IP}:6379 \
+    -e DRYCC_REDIS_PIPELINE_LENGTH=1 \
+    -e DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS=1 \
     -it \
     ${DEV_ENV_IMAGE} \
     bash -c "go test --cover --race -v -tags=testredis ./..."

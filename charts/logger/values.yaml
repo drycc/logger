@@ -5,7 +5,7 @@ imageRegistry: "registry.drycc.cc"
 # limitsCpu: "100m"
 # limitsMemory: "50Mi"
 # Maximum lines of recent log file to display
-logsMaximumLines: 300
+logsMaximumLines: 3000
 # Maximum timeout for follow logs
 logsMaximumTimeout: 300
 

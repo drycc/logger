@@ -18,7 +18,6 @@ const (
 
 var (
 	controllerRegex = regexp.MustCompile(controllerPattern)
-	podRegex        = regexp.MustCompile(podPattern)
 )
 
 func handle(rawMessage []byte, storageAdapter storage.Adapter) error {
@@ -26,15 +25,11 @@ func handle(rawMessage []byte, storageAdapter storage.Adapter) error {
 	if err := json.Unmarshal(rawMessage, message); err != nil {
 		return err
 	}
-	var err error
 	if fromController(message) {
-		err = storageAdapter.Write(getApplicationFromControllerMessage(message), buildControllerLogMessage(message))
-	} else {
-		labels := message.Kubernetes.Labels
-		err = storageAdapter.Write(labels["app"], buildApplicationLogMessage(message))
-	}
-	if err != nil {
-		fmt.Printf("storage message error, %v, %v", err, storageAdapter)
+		if err := storageAdapter.Write(getApplicationFromControllerMessage(message), buildControllerLogMessage(message)); err != nil {
+			fmt.Printf("storage message error, %v, %v", err, storageAdapter)
+		}
+
 	}
 	return nil
 }
@@ -50,24 +45,5 @@ func getApplicationFromControllerMessage(message *Message) string {
 
 func buildControllerLogMessage(message *Message) string {
 	l := controllerRegex.FindStringSubmatch(message.Log)
-	return fmt.Sprintf("%s drycc[controller]: %s %s",
-		message.Time.Format(timeFormat),
-		l[1],
-		strings.Trim(l[4], " "))
-}
-
-func buildApplicationLogMessage(message *Message) string {
-	p := podRegex.FindStringSubmatch(message.Kubernetes.PodName)
-	tag := fmt.Sprintf(
-		"%s.%s",
-		message.Kubernetes.Labels["type"],
-		message.Kubernetes.Labels["version"])
-	if len(p) > 0 {
-		tag = fmt.Sprintf("%s.%s", tag, p[len(p)-1])
-	}
-	return fmt.Sprintf("%s %s[%s]: %s",
-		message.Time.Format(timeFormat),
-		message.Kubernetes.Labels["app"],
-		tag,
-		message.Log)
+	return fmt.Sprintf("%s drycc[controller]: %s %s", message.Time.Format(timeFormat), l[1], strings.Trim(l[4], " "))
 }

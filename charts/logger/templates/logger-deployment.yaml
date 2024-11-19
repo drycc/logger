@@ -32,14 +32,24 @@ spec:
         args:
           - netcat
           - -v
-          - -a
-          - $(DRYCC_REDIS_ADDRS)
+          - -u
+          - $(DRYCC_VALKEY_URL)
         env:
-        - name: DRYCC_REDIS_ADDRS
+        {{- if (.Values.valkeyUrl) }}
+        - name: DRYCC_VALKEY_URL
           valueFrom:
             secretKeyRef:
-              name: redis-creds
-              key: addrs
+              name: logger-creds
+              key: valkey-url
+        {{- else if eq .Values.global.valkeyLocation "on-cluster"  }}
+        - name: VALKEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: valkey-creds
+              key: password
+        - name: DRYCC_VALKEY_URL
+          value: "redis://:$(VALKEY_PASSWORD)@drycc-valkey.{{.Release.Namespace}}.svc.{{.Values.global.clusterDomain}}:16379/2"
+        {{- end }}
       containers:
       - name: drycc-logger
         image: {{.Values.imageRegistry}}/{{.Values.imageOrg}}/logger:{{.Values.imageTag}}
@@ -50,21 +60,26 @@ spec:
         {{- end }}
         env:
         - name: STORAGE_ADAPTER
-          value: redis
-        - name: DRYCC_REDIS_ADDRS
-          valueFrom:
-            secretKeyRef:
-              name: redis-creds
-              key: addrs
-        - name: DRYCC_REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-creds
-              key: password
+          value: valkey
         - name: DRYCC_LOGS_MAXIMUM_LINES
           value: "{{.Values.logsMaximumLines}}"
         - name: DRYCC_LOGS_MAXIMUM_TIMEOUT
           value: "{{.Values.logsMaximumTimeout}}"
+        {{- if (.Values.valkeyUrl) }}
+        - name: DRYCC_VALKEY_URL
+          valueFrom:
+            secretKeyRef:
+              name: logger-creds
+              key: valkey-url
+        {{- else if eq .Values.global.valkeyLocation "on-cluster"  }}
+        - name: VALKEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: valkey-creds
+              key: password
+        - name: DRYCC_VALKEY_URL
+          value: "redis://:$(VALKEY_PASSWORD)@drycc-valkey.{{.Release.Namespace}}.svc.{{.Values.global.clusterDomain}}:16379/2"
+        {{- end }}
         ports:
         - containerPort: 8088
           name: http

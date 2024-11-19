@@ -3,38 +3,38 @@
 DEV_ENV_OPTS=$2
 DEV_ENV_IMAGE=$3
 
-function start-test-redis() {
-  podman run --name test-logger-redis -d docker.io/library/redis:latest
+function start-test-valkey() {
+  podman run --name test-logger-valkey -d docker.io/valkey/valkey:latest
 }
 
-function stop-test-redis() {
-  podman kill test-logger-redis
-  podman rm test-logger-redis
+function stop-test-valkey() {
+  podman kill test-logger-valkey
+  podman rm test-logger-valkey
 }
 
 function test-cover() {
-  start-test-redis
-  REDIS_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
+  start-test-valkey
+  VALKEY_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-valkey)
   podman run ${DEV_ENV_OPTS} \
-    -e DRYCC_REDIS_ADDRS=${REDIS_IP}:6379 \
+    -e DRYCC_VALKEY_URL=redis://${VALKEY_IP}:6379/0 \
     -it \
     ${DEV_ENV_IMAGE} \
     bash -c "test-cover.sh"
-  stop-test-redis
+  stop-test-valkey
 }
 
 function test-unit() {
-  start-test-redis test --cover --race -v
-  REDIS_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-redis)
-  echo "redis ip: $REDIS_IP"
+  start-test-valkey test --cover --race -v
+  VALKEY_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-valkey)
+  echo "valkey ip: $VALKEY_IP"
   podman run ${DEV_ENV_OPTS} \
-    -e DRYCC_REDIS_ADDRS=${REDIS_IP}:6379 \
-    -e DRYCC_REDIS_PIPELINE_LENGTH=1 \
-    -e DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS=1 \
+    -e DRYCC_VALKEY_URL=redis://${VALKEY_IP}:6379/0 \
+    -e DRYCC_VALKEY_PIPELINE_LENGTH=1 \
+    -e DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS=1 \
     -it \
     ${DEV_ENV_IMAGE} \
-    bash -c "go test --cover --race -v -tags=testredis ./..."
-  stop-test-redis
+    bash -c "go test --cover --race -v -tags=testvalkey ./..."
+  stop-test-valkey
 }
 
 "$@"

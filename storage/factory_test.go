@@ -35,13 +35,13 @@ func TestFactoryGetFileBasedAdapter(t *testing.T) {
 	}
 }
 
-func TestGetRedisBasedAdapter(t *testing.T) {
-	a, err := NewAdapter("redis", 1)
+func TestGetValkeyBasedAdapter(t *testing.T) {
+	a, err := NewAdapter("valkey", 1)
 	if err != nil {
 		t.Error(err)
 	}
-	retType, ok := a.(*redisAdapter)
+	retType, ok := a.(*valkeyAdapter)
 	if !ok {
-		t.Errorf("expected a redisAdapter, but got a %s", reflect.TypeOf(retType).String())
+		t.Errorf("expected a valkeyAdapter, but got a %s", reflect.TypeOf(retType).String())
 	}
 }

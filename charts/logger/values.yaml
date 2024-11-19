@@ -42,13 +42,14 @@ podAntiAffinityPreset:
 
 # logger replicas
 replicas: 1
+
 # Service
 service:
   # Provide any additional service annotations
   annotations: {}
 
-redis:
-  replicas: 1
+# external valkey configuration
+valkeyUrl: ""
 
 global:
   # A domain name consists of one or more parts.
@@ -56,9 +57,9 @@ global:
   # Each part must be 1 to 63 characters in length and can contain lowercase letters, digits, and hyphens (-).
   # It must start and end with a lowercase letter or digit.
   clusterDomain: "cluster.local"
-  # Set the location of Workflow's logger-specific Redis instance
+  # Set the location of Workflow's logger-specific Valkey instance
   #
   # Valid values are:
-  # - on-cluster: Run Redis within the Kubernetes cluster
-  # - off-cluster: Run Redis outside the Kubernetes cluster (configure in loggerRedis section)
-  redisLocation: "on-cluster"
+  # - on-cluster: Run Valkey within the Kubernetes cluster
+  # - off-cluster: Run Valkey outside the Kubernetes cluster (configure in loggerValkey section)
+  valkeyLocation: "on-cluster"

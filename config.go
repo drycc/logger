@@ -9,9 +9,9 @@ const (
 )
 
 type config struct {
-	StorageType    string `envconfig:"STORAGE_ADAPTER" default:"redis"`
+	StorageType    string `envconfig:"STORAGE_ADAPTER" default:"valkey"`
 	NumLines       int    `envconfig:"NUMBER_OF_LINES" default:"1000"`
-	AggregatorType string `envconfig:"AGGREGATOR_TYPE" default:"redis"`
+	AggregatorType string `envconfig:"AGGREGATOR_TYPE" default:"valkey"`
 }
 
 func parseConfig(appName string) (*config, error) {

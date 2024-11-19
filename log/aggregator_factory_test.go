@@ -43,12 +43,12 @@ func TestGetUsingInvalidValues(t *testing.T) {
 	}
 }
 
-func TestRedisBasedAggregator(t *testing.T) {
-	a, err := NewAggregator("redis", &stubStorageAdapter{})
+func TestValkeyBasedAggregator(t *testing.T) {
+	a, err := NewAggregator("valkey", &stubStorageAdapter{})
 	if err != nil {
 		t.Error(err)
 	}
-	expected := "*log.redisAggregator"
+	expected := "*log.valkeyAggregator"
 	aType := reflect.TypeOf(a).String()
 	if aType != expected {
 		t.Errorf("Expected a %s, but got a %s", expected, aType)

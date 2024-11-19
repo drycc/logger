@@ -9,8 +9,8 @@ import (
 // NewAggregator returns a pointer to an appropriate implementation of the Aggregator interface, as
 // determined by the aggregatorType string it is passed.
 func NewAggregator(aggregatorType string, storageAdapter storage.Adapter) (Aggregator, error) {
-	if aggregatorType == "redis" {
-		return newRedisAggregator(storageAdapter), nil
+	if aggregatorType == "valkey" {
+		return newValkeyAggregator(storageAdapter), nil
 	}
 	return nil, fmt.Errorf("unrecognized aggregator type: '%s'", aggregatorType)
 }

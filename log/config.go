@@ -11,10 +11,10 @@ const (
 )
 
 type config struct {
-	RedisAddrs         string `envconfig:"DRYCC_REDIS_ADDRS" default:":6379"`
-	RedisPassword      string `envconfig:"DRYCC_REDIS_PASSWORD" default:""`
-	RedisStream        string `envconfig:"DRYCC_REDIS_STREAM" default:"logs"`
-	RedisStreamGroup   string `envconfig:"DRYCC_REDIS_STREAM_GROUP" default:"logger"`
+	ValkeyAddrs        string `envconfig:"DRYCC_VALKEY_ADDRS" default:":6379"`
+	ValkeyPassword     string `envconfig:"DRYCC_VALKEY_PASSWORD" default:""`
+	ValkeyStream       string `envconfig:"DRYCC_VALKEY_STREAM" default:"logs"`
+	ValkeyStreamGroup  string `envconfig:"DRYCC_VALKEY_STREAM_GROUP" default:"logger"`
 	StopTimeoutSeconds int    `envconfig:"AGGREGATOR_STOP_TIMEOUT_SEC" default:"1"`
 }
 

@@ -1,5 +1,5 @@
-//go:build testredis
-// +build testredis
+//go:build testvalkey
+// +build testvalkey
 
 package storage
 
@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-func TestRedisReadFromNonExistingApp(t *testing.T) {
+func TestValkeyReadFromNonExistingApp(t *testing.T) {
 	// Initialize a new storage adapter
-	a, err := NewRedisStorageAdapter(10)
+	a, err := NewValkeyStorageAdapter(10)
 	if err != nil {
 		t.Error(err)
 	}
-	// No logs have been written; there should be no redis list for app
+	// No logs have been written; there should be no valkey list for app
 	messages, err := a.Read(app, 10)
 	if messages != nil {
 		t.Error("expected no messages, but got some")
@@ -26,10 +26,10 @@ func TestRedisReadFromNonExistingApp(t *testing.T) {
 	}
 }
 
-func TestRedisWithBadBufferSizes(t *testing.T) {
+func TestValkeyWithBadBufferSizes(t *testing.T) {
 	// Initialize with invalid buffer sizes
 	for _, size := range []int{-1, 0} {
-		a, err := NewRedisStorageAdapter(size)
+		a, err := NewValkeyStorageAdapter(size)
 		if a != nil {
 			t.Error("expected no storage adapter, but got one")
 		}
@@ -39,9 +39,9 @@ func TestRedisWithBadBufferSizes(t *testing.T) {
 	}
 }
 
-func TestRedisLogs(t *testing.T) {
+func TestValkeyLogs(t *testing.T) {
 	// Initialize with small buffers
-	a, err := NewRedisStorageAdapter(10)
+	a, err := NewValkeyStorageAdapter(10)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,7 +53,7 @@ func TestRedisLogs(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	// Sleep for a bit because the adapter queues logs internally and writes them to Redis only when
+	// Sleep for a bit because the adapter queues logs internally and writes them to Valkey only when
 	// there are 50 queued up OR a 1 second timeout has been reached.
 	time.Sleep(time.Second * 2)
 	// Read more logs than there are
@@ -86,7 +86,7 @@ func TestRedisLogs(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	// Sleep for a bit because the adapter queues logs internally and writes them to Redis only when
+	// Sleep for a bit because the adapter queues logs internally and writes them to Valkey only when
 	// there are 50 queued up OR a 1 second timeout has been reached.
 	time.Sleep(time.Second * 2)
 	// Read more logs than the buffer can hold
@@ -107,8 +107,8 @@ func TestRedisLogs(t *testing.T) {
 	}
 }
 
-func TestRedisDestroy(t *testing.T) {
-	a, err := NewRedisStorageAdapter(10)
+func TestValkeyDestroy(t *testing.T) {
+	a, err := NewValkeyStorageAdapter(10)
 	if err != nil {
 		t.Error(err)
 	}
@@ -118,34 +118,34 @@ func TestRedisDestroy(t *testing.T) {
 	if err := a.Write(app, "Hello, log!"); err != nil {
 		t.Error(err)
 	}
-	// Sleep for a bit because the adapter queues logs internally and writes them to Redis only when
+	// Sleep for a bit because the adapter queues logs internally and writes them to Valkey only when
 	// there are 50 queued up OR a 1 second timeout has been reached.
 	time.Sleep(time.Second * 2)
 	var ctx = context.Background()
-	// A redis list should exist for the app
-	exists, err := a.(*redisAdapter).redisClient.Exists(ctx, app).Result()
+	// A valkey list should exist for the app
+	exists, err := a.(*valkeyAdapter).valkeyClient.Exists(ctx, app).Result()
 	if err != nil {
 		t.Error(err)
 	}
 	if !(exists == 1) {
-		t.Error("Log redis list was expected to exist, but doesn't.")
+		t.Error("Log valkey list was expected to exist, but doesn't.")
 	}
 	// Now destroy it
 	if err := a.Destroy(app); err != nil {
 		t.Error(err)
 	}
-	// Now check that the redis list no longer exists
-	exists, err = a.(*redisAdapter).redisClient.Exists(ctx, app).Result()
+	// Now check that the valkey list no longer exists
+	exists, err = a.(*valkeyAdapter).valkeyClient.Exists(ctx, app).Result()
 	if err != nil {
 		t.Error(err)
 	}
 	if exists == 1 {
-		t.Error("Log redis list still exist, but was expected not to.")
+		t.Error("Log valkey list still exist, but was expected not to.")
 	}
 }
 
-func TestRedisChan(t *testing.T) {
-	sa, err := NewRedisStorageAdapter(1)
+func TestValkeyChan(t *testing.T) {
+	sa, err := NewValkeyStorageAdapter(1)
 	if err != nil {
 		t.Error(err)
 	}

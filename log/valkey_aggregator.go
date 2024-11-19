@@ -8,10 +8,10 @@ import (
 
 	"github.com/drycc/logger/storage"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
+	valkey "github.com/redis/go-redis/v9"
 )
 
-type redisAggregator struct {
+type valkeyAggregator struct {
 	listening bool
 	cfg       *config
 	ctx       context.Context
@@ -19,9 +19,9 @@ type redisAggregator struct {
 	cancel    context.CancelFunc
 }
 
-func newRedisAggregator(storageAdapter storage.Adapter) Aggregator {
+func newValkeyAggregator(storageAdapter storage.Adapter) Aggregator {
 	context, cancel := context.WithCancel(context.Background())
-	return &redisAggregator{
+	return &valkeyAggregator{
 		handle: func(message map[string]interface{}) {
 			err := handle([]byte(message["data"].(string)), storageAdapter)
 			if err != nil {
@@ -33,13 +33,13 @@ func newRedisAggregator(storageAdapter storage.Adapter) Aggregator {
 	}
 }
 
-func (a *redisAggregator) messageMainLoop(redisAddr string) {
-	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr, Password: a.cfg.RedisPassword})
-	redisClient.XGroupCreateMkStream(a.ctx, a.cfg.RedisStream, a.cfg.RedisStreamGroup, "0")
-	xReadGroupArgs := redis.XReadGroupArgs{
-		Group:    a.cfg.RedisStreamGroup,
+func (a *valkeyAggregator) messageMainLoop(valkeyAddr string) {
+	valkeyClient := valkey.NewClient(&valkey.Options{Addr: valkeyAddr, Password: a.cfg.ValkeyPassword})
+	valkeyClient.XGroupCreateMkStream(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, "0")
+	xReadGroupArgs := valkey.XReadGroupArgs{
+		Group:    a.cfg.ValkeyStreamGroup,
 		Consumer: uuid.New().String(),
-		Streams:  []string{a.cfg.RedisStream, ">"},
+		Streams:  []string{a.cfg.ValkeyStream, ">"},
 		Count:    30,
 		Block:    time.Duration(30) * time.Second,
 		NoAck:    false,
@@ -49,17 +49,17 @@ func (a *redisAggregator) messageMainLoop(redisAddr string) {
 		case <-a.ctx.Done():
 			return
 		default:
-			entries, err := redisClient.XReadGroup(a.ctx, &xReadGroupArgs).Result()
+			entries, err := valkeyClient.XReadGroup(a.ctx, &xReadGroupArgs).Result()
 			if err != nil {
-				redisClient.Close()
-				redisClient = redis.NewClient(&redis.Options{Addr: redisAddr, Password: a.cfg.RedisPassword})
+				valkeyClient.Close()
+				valkeyClient = valkey.NewClient(&valkey.Options{Addr: valkeyAddr, Password: a.cfg.ValkeyPassword})
 			} else if err == nil && len(entries) > 0 {
 				for i := 0; i < len(entries[0].Messages); i++ {
 					a.handle(entries[0].Messages[i].Values)
-					redisClient.XAck(a.ctx, a.cfg.RedisStream, a.cfg.RedisStreamGroup, entries[0].Messages[i].ID)
+					valkeyClient.XAck(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, entries[0].Messages[i].ID)
 				}
 			} else {
-				l.Printf("no data was read from redis xread group, %v, %v", err, entries)
+				l.Printf("no data was read from valkey xread group, %v, %v", err, entries)
 				time.Sleep(time.Duration(9) * time.Second)
 			}
 		}
@@ -68,7 +68,7 @@ func (a *redisAggregator) messageMainLoop(redisAddr string) {
 
 // Listen starts the aggregator. Invocations of this function are not concurrency safe and multiple
 // serialized invocations have no effect.
-func (a *redisAggregator) Listen() error {
+func (a *valkeyAggregator) Listen() error {
 	// Should only ever be called once
 	if !a.listening {
 		a.listening = true
@@ -77,16 +77,16 @@ func (a *redisAggregator) Listen() error {
 		if err != nil {
 			l.Fatalf("config error: %s: ", err)
 		}
-		redisAddrs := strings.Split(a.cfg.RedisAddrs, ",")
-		for _, redisAddr := range redisAddrs {
-			go a.messageMainLoop(redisAddr)
+		valkeyAddrs := strings.Split(a.cfg.ValkeyAddrs, ",")
+		for _, valkeyAddr := range valkeyAddrs {
+			go a.messageMainLoop(valkeyAddr)
 		}
 	}
 	return nil
 }
 
 // Stop is the Aggregator interface implementation
-func (a *redisAggregator) Stop() error {
+func (a *valkeyAggregator) Stop() error {
 	a.cancel()
 	timeout := a.cfg.stopTimeoutDuration()
 	tmr := time.NewTimer(timeout)
@@ -100,7 +100,7 @@ func (a *redisAggregator) Stop() error {
 }
 
 // Stopped is the Aggregator interface implementation
-func (a *redisAggregator) Stopped() <-chan error {
+func (a *valkeyAggregator) Stopped() <-chan error {
 	retCh := make(chan error)
 	go func() {
 		<-a.ctx.Done()

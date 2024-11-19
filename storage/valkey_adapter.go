@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	r "github.com/redis/go-redis/v9"
+	valkey "github.com/redis/go-redis/v9"
 )
 
 type message struct {
@@ -27,17 +27,17 @@ type messagePipeliner struct {
 	timeout       time.Duration
 	bufferSize    int
 	messageCount  int
-	pipeline      r.Pipeliner
+	pipeline      valkey.Pipeliner
 	timeoutTicker *time.Ticker
 	queuedApps    map[string]bool
 	errCh         chan error
 }
 
-func newMessagePipeliner(bufferSize int, redisClient *r.ClusterClient, timeout time.Duration, errCh chan error) *messagePipeliner {
+func newMessagePipeliner(bufferSize int, valkeyClient *valkey.ClusterClient, timeout time.Duration, errCh chan error) *messagePipeliner {
 	return &messagePipeliner{
 		timeout:       timeout,
 		bufferSize:    bufferSize,
-		pipeline:      redisClient.Pipeline(),
+		pipeline:      valkeyClient.Pipeline(),
 		timeoutTicker: time.NewTicker(timeout),
 		queuedApps:    map[string]bool{},
 		errCh:         errCh,
@@ -72,25 +72,25 @@ func (mp messagePipeliner) execPipeline() {
 	}
 }
 
-func newClusterClient(cfg *redisConfig) (*r.ClusterClient, error) {
+func newClusterClient(cfg *valkeyConfig) (*valkey.ClusterClient, error) {
 	addrs := strings.Split(cfg.Addrs, ",")
 	sort.Strings(addrs)
-	return r.NewClusterClient(&r.ClusterOptions{
-		ClusterSlots: func(context.Context) ([]r.ClusterSlot, error) {
+	return valkey.NewClusterClient(&valkey.ClusterOptions{
+		ClusterSlots: func(context.Context) ([]valkey.ClusterSlot, error) {
 			const slotsSize = 16383
 			var size = len(addrs)
 			var slotsRange = slotsSize / size
-			var slots []r.ClusterSlot
+			var slots []valkey.ClusterSlot
 			for index, addr := range addrs {
 				start := slotsRange * index
 				end := start + slotsRange
 				if (slotsSize - end) < slotsRange {
 					end = slotsSize
 				}
-				slots = append(slots, r.ClusterSlot{
+				slots = append(slots, valkey.ClusterSlot{
 					Start: start,
 					End:   end,
-					Nodes: []r.ClusterNode{{Addr: addr}},
+					Nodes: []valkey.ClusterNode{{Addr: addr}},
 				})
 			}
 			return slots, nil
@@ -100,17 +100,17 @@ func newClusterClient(cfg *redisConfig) (*r.ClusterClient, error) {
 	}), nil
 }
 
-type redisAdapter struct {
+type valkeyAdapter struct {
 	started        bool
 	bufferSize     int
-	redisClient    *r.ClusterClient
+	valkeyClient   *valkey.ClusterClient
 	messageChannel chan *message
 	stopCh         chan struct{}
-	config         *redisConfig
+	config         *valkeyConfig
 }
 
-// NewRedisStorageAdapter returns a pointer to a new instance of a redis-based storage.Adapter.
-func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
+// NewValkeyStorageAdapter returns a pointer to a new instance of a valkey-based storage.Adapter.
+func NewValkeyStorageAdapter(bufferSize int) (Adapter, error) {
 	if bufferSize <= 0 {
 		return nil, fmt.Errorf("invalid buffer size: %d", bufferSize)
 	}
@@ -122,9 +122,9 @@ func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	rsa := &redisAdapter{
+	rsa := &valkeyAdapter{
 		bufferSize:     bufferSize,
-		redisClient:    client,
+		valkeyClient:   client,
 		messageChannel: make(chan *message, bufferSize),
 		stopCh:         make(chan struct{}),
 		config:         cfg,
@@ -134,10 +134,10 @@ func NewRedisStorageAdapter(bufferSize int) (Adapter, error) {
 
 // Start the storage adapter. Invocations of this function are not concurrency safe and multiple
 // serialized invocations have no effect.
-func (a *redisAdapter) Start() {
+func (a *valkeyAdapter) Start() {
 	if !a.started {
 		a.started = true
-		mp := newMessagePipeliner(a.bufferSize, a.redisClient, a.config.PipelineTimeout, make(chan error, a.bufferSize))
+		mp := newMessagePipeliner(a.bufferSize, a.valkeyClient, a.config.PipelineTimeout, make(chan error, a.bufferSize))
 		go func() {
 			for {
 				select {
@@ -158,17 +158,17 @@ func (a *redisAdapter) Start() {
 	}
 }
 
-// Write adds a log message to to an app-specific list in redis using ring-buffer-like semantics
-func (a *redisAdapter) Write(app string, messageBody string) error {
+// Write adds a log message to to an app-specific list in valkey using ring-buffer-like semantics
+func (a *valkeyAdapter) Write(app string, messageBody string) error {
 	a.messageChannel <- newMessage(app, messageBody)
 	return nil
 }
 
-// Read retrieves a specified number of log lines from an app-specific list in redis
-func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
+// Read retrieves a specified number of log lines from an app-specific list in valkey
+func (a *valkeyAdapter) Read(app string, lines int) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), a.config.PipelineTimeout)
 	defer cancel()
-	stringSliceCmd := a.redisClient.LRange(ctx, app, int64(-1*lines), -1)
+	stringSliceCmd := a.valkeyClient.LRange(ctx, app, int64(-1*lines), -1)
 	result, err := stringSliceCmd.Result()
 	if err != nil {
 		return nil, err
@@ -180,11 +180,11 @@ func (a *redisAdapter) Read(app string, lines int) ([]string, error) {
 }
 
 // Make Chan a pipeline to read logs all the time
-func (a *redisAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
+func (a *valkeyAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
 	channel := make(chan string, size)
 	go func() {
 		defer close(channel)
-		subscribe := a.redisClient.Subscribe(context.Background(), app)
+		subscribe := a.valkeyClient.Subscribe(context.Background(), app)
 		defer subscribe.Close()
 		subscriptions := subscribe.Channel()
 		for len(channel) != size {
@@ -199,19 +199,19 @@ func (a *redisAdapter) Chan(ctx context.Context, app string, size int) (chan str
 	return channel, nil
 }
 
-// Destroy deletes an app-specific list from redis
-func (a *redisAdapter) Destroy(app string) error {
+// Destroy deletes an app-specific list from valkey
+func (a *valkeyAdapter) Destroy(app string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), a.config.PipelineTimeout)
 	defer cancel()
-	return a.redisClient.Del(ctx, app).Err()
+	return a.valkeyClient.Del(ctx, app).Err()
 }
 
 // Reopen the storage adapter-- in the case of this implementation, a no-op
-func (a *redisAdapter) Reopen() error {
+func (a *valkeyAdapter) Reopen() error {
 	return nil
 }
 
 // Stop the storage adapter. Additional writes may not be performed after stopping.
-func (a *redisAdapter) Stop() {
+func (a *valkeyAdapter) Stop() {
 	close(a.stopCh)
 }

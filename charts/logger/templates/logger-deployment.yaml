@@ -33,12 +33,12 @@ spec:
           - netcat
           - -v
           - -a
-          - $(DRYCC_REDIS_ADDRS)
+          - $(DRYCC_VALKEY_ADDRS)
         env:
-        - name: DRYCC_REDIS_ADDRS
+        - name: DRYCC_VALKEY_ADDRS
           valueFrom:
             secretKeyRef:
-              name: redis-creds
+              name: valkey-creds
               key: addrs
       containers:
       - name: drycc-logger
@@ -50,16 +50,16 @@ spec:
         {{- end }}
         env:
         - name: STORAGE_ADAPTER
-          value: redis
-        - name: DRYCC_REDIS_ADDRS
+          value: valkey
+        - name: DRYCC_VALKEY_ADDRS
           valueFrom:
             secretKeyRef:
-              name: redis-creds
+              name: valkey-creds
               key: addrs
-        - name: DRYCC_REDIS_PASSWORD
+        - name: DRYCC_VALKEY_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: redis-creds
+              name: valkey-creds
               key: password
         - name: DRYCC_LOGS_MAXIMUM_LINES
           value: "{{.Values.logsMaximumLines}}"

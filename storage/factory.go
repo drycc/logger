@@ -22,8 +22,8 @@ func NewAdapter(adapterType string, numLines int) (Adapter, error) {
 		}
 		return adapter, nil
 	}
-	if adapterType == "redis" {
-		adapter, err := NewRedisStorageAdapter(numLines)
+	if adapterType == "valkey" {
+		adapter, err := NewValkeyStorageAdapter(numLines)
 		if err != nil {
 			return nil, err
 		}

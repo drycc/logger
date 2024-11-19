@@ -12,9 +12,9 @@ func TestParseConfig(t *testing.T) {
 	original, err := parseConfig("foo")
 	assert.NoError(t, err, "error parsing config")
 
-	os.Setenv("DRYCC_REDIS_PASSWORD", "password")
-	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", "1")
-	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", "2")
+	os.Setenv("DRYCC_VALKEY_PASSWORD", "password")
+	os.Setenv("DRYCC_VALKEY_PIPELINE_LENGTH", "1")
+	os.Setenv("DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS", "2")
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err, "error parsing config")
@@ -23,7 +23,7 @@ func TestParseConfig(t *testing.T) {
 	assert.Equal(t, c.PipelineLength, 1)
 	assert.Equal(t, c.PipelineTimeoutSeconds, 2)
 
-	os.Setenv("DRYCC_REDIS_PASSWORD", original.Password)
-	os.Setenv("DRYCC_REDIS_PIPELINE_LENGTH", fmt.Sprint(original.PipelineLength))
-	os.Setenv("DRYCC_REDIS_PIPELINE_TIMEOUT_SECONDS", fmt.Sprint(original.PipelineTimeoutSeconds))
+	os.Setenv("DRYCC_VALKEY_PASSWORD", original.Password)
+	os.Setenv("DRYCC_VALKEY_PIPELINE_LENGTH", fmt.Sprint(original.PipelineLength))
+	os.Setenv("DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS", fmt.Sprint(original.PipelineTimeoutSeconds))
 }

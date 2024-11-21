@@ -53,7 +53,7 @@ func (a *valkeyAggregator) messageMainLoop(valkeyAddr string) {
 			if err != nil {
 				valkeyClient.Close()
 				valkeyClient = valkey.NewClient(&valkey.Options{Addr: valkeyAddr, Password: a.cfg.ValkeyPassword})
-			} else if err == nil && len(entries) > 0 {
+			} else if len(entries) > 0 {
 				for i := 0; i < len(entries[0].Messages); i++ {
 					a.handle(entries[0].Messages[i].Values)
 					valkeyClient.XAck(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, entries[0].Messages[i].ID)

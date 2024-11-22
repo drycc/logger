@@ -3,12 +3,12 @@ package log
 import (
 	"context"
 	l "log"
-	"strings"
 	"time"
 
 	"github.com/drycc/logger/storage"
 	"github.com/google/uuid"
-	valkey "github.com/redis/go-redis/v9"
+	"github.com/valkey-io/valkey-go"
+	"github.com/valkey-io/valkey-go/valkeycompat"
 )
 
 type valkeyAggregator struct {
@@ -33,10 +33,12 @@ func newValkeyAggregator(storageAdapter storage.Adapter) Aggregator {
 	}
 }
 
-func (a *valkeyAggregator) messageMainLoop(valkeyAddr string) {
-	valkeyClient := valkey.NewClient(&valkey.Options{Addr: valkeyAddr, Password: a.cfg.ValkeyPassword})
-	valkeyClient.XGroupCreateMkStream(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, "0")
-	xReadGroupArgs := valkey.XReadGroupArgs{
+func (a *valkeyAggregator) messageMainLoop() {
+	valkeyClient, _ := valkey.NewClient(valkey.MustParseURL(a.cfg.ValkeyURL))
+	valkeyCmdable := valkeycompat.NewAdapter(valkeyClient)
+	valkeyCmdable.XGroupCreateMkStream(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, "0")
+
+	xReadGroupArgs := valkeycompat.XReadGroupArgs{
 		Group:    a.cfg.ValkeyStreamGroup,
 		Consumer: uuid.New().String(),
 		Streams:  []string{a.cfg.ValkeyStream, ">"},
@@ -49,14 +51,15 @@ func (a *valkeyAggregator) messageMainLoop(valkeyAddr string) {
 		case <-a.ctx.Done():
 			return
 		default:
-			entries, err := valkeyClient.XReadGroup(a.ctx, &xReadGroupArgs).Result()
+			entries, err := valkeyCmdable.XReadGroup(a.ctx, xReadGroupArgs).Result()
 			if err != nil {
 				valkeyClient.Close()
-				valkeyClient = valkey.NewClient(&valkey.Options{Addr: valkeyAddr, Password: a.cfg.ValkeyPassword})
+				valkeyClient, _ = valkey.NewClient(valkey.MustParseURL(a.cfg.ValkeyURL))
+				valkeyCmdable = valkeycompat.NewAdapter(valkeyClient)
 			} else if len(entries) > 0 {
 				for i := 0; i < len(entries[0].Messages); i++ {
 					a.handle(entries[0].Messages[i].Values)
-					valkeyClient.XAck(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, entries[0].Messages[i].ID)
+					valkeyCmdable.XAck(a.ctx, a.cfg.ValkeyStream, a.cfg.ValkeyStreamGroup, entries[0].Messages[i].ID)
 				}
 			} else {
 				l.Printf("no data was read from valkey xread group, %v, %v", err, entries)
@@ -77,10 +80,7 @@ func (a *valkeyAggregator) Listen() error {
 		if err != nil {
 			l.Fatalf("config error: %s: ", err)
 		}
-		valkeyAddrs := strings.Split(a.cfg.ValkeyAddrs, ",")
-		for _, valkeyAddr := range valkeyAddrs {
-			go a.messageMainLoop(valkeyAddr)
-		}
+		go a.messageMainLoop()
 	}
 	return nil
 }

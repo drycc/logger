@@ -20,8 +20,7 @@ func TestParseConfig(t *testing.T) {
 	original, err := parseConfig("foo")
 	assert.NoError(t, err)
 
-	os.Setenv("DRYCC_VALKEY_ADDRS", "127.0.0.1:6379")
-	os.Setenv("DRYCC_VALKEY_PASSWORD", "123456")
+	os.Setenv("DRYCC_VALKEY_URL", "redis://127.0.0.1:6379")
 	os.Setenv("DRYCC_VALKEY_STREAM", "log")
 	os.Setenv("DRYCC_VALKEY_STREAM_GROUP", "logger")
 	os.Setenv("DRYCC_VALKEY_STREAM_COUNT", "30")
@@ -30,14 +29,12 @@ func TestParseConfig(t *testing.T) {
 
 	c, err := parseConfig("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, c.ValkeyAddrs, "127.0.0.1:6379")
-	assert.Equal(t, c.ValkeyPassword, "123456")
+	assert.Equal(t, c.ValkeyURL, "redis://127.0.0.1:6379")
 	assert.Equal(t, c.ValkeyStream, "log")
 	assert.Equal(t, c.ValkeyStreamGroup, "logger")
 	assert.Equal(t, c.StopTimeoutSeconds, 2)
 
-	os.Setenv("DRYCC_VALKEY_ADDRS", original.ValkeyAddrs)
-	os.Setenv("DRYCC_VALKEY_PASSWORD", original.ValkeyPassword)
+	os.Setenv("DRYCC_VALKEY_URL", original.ValkeyURL)
 	os.Setenv("DRYCC_VALKEY_STREAM", original.ValkeyStream)
 	os.Setenv("DRYCC_VALKEY_STREAM_GROUP", original.ValkeyStreamGroup)
 	os.Setenv("AGGREGATOR_STOP_TIMEOUT_SEC", fmt.Sprint(original.StopTimeoutSeconds))

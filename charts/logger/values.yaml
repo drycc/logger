@@ -42,13 +42,14 @@ podAntiAffinityPreset:
 
 # logger replicas
 replicas: 1
+
 # Service
 service:
   # Provide any additional service annotations
   annotations: {}
 
-valkey:
-  replicas: 1
+# external valkey configuration
+valkeyUrl: ""
 
 global:
   # A domain name consists of one or more parts.

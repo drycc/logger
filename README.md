@@ -22,18 +22,17 @@ We have also decided to not use `logspout` as the mechanism to get logs from eac
 ## Configuration
 The following environment variables can be used to configure logger:
 
-| Name                                   | Default Value |
-|----------------------------------------|---------------|
-| STORAGE_ADAPTER                        | "valkey"      |
-| NUMBER_OF_LINES (per app)              | "1000"        |
-| AGGREGATOR_TYPE                        | "valkey"      |
-| DRYCC_VALKEY_STREAM                    | logs          |
-| DRYCC_VALKEY_STREAM_GROUP              | logger        |
-| AGGREGATOR_STOP_TIMEOUT_SEC            | 1             |
-| DRYCC_VALKEY_ADDRS                     | ":6379"       |
-| DRYCC_VALKEY_PASSWORD                  | ""            |
-| DRYCC_VALKEY_PIPELINE_LENGTH           | 50            |
-| DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS  | 1             |
+| Name                                   | Default Value            |
+|----------------------------------------|--------------------------|
+| STORAGE_ADAPTER                        | "valkey"                 |
+| NUMBER_OF_LINES (per app)              | "1000"                   |
+| AGGREGATOR_TYPE                        | "valkey"                 |
+| DRYCC_VALKEY_STREAM                    | logs                     |
+| DRYCC_VALKEY_STREAM_GROUP              | logger                   |
+| AGGREGATOR_STOP_TIMEOUT_SEC            | 1                        |
+| DRYCC_VALKEY_URL                       | "redis://127.0.0.1:6379" |
+| DRYCC_VALKEY_PIPELINE_LENGTH           | 50                       |
+| DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS  | 1                        |
 
 ## Development
 The only assumption this project makes about your environment is that you have a working podman to build the image against.

@@ -11,8 +11,7 @@ const (
 )
 
 type config struct {
-	ValkeyAddrs        string `envconfig:"DRYCC_VALKEY_ADDRS" default:":6379"`
-	ValkeyPassword     string `envconfig:"DRYCC_VALKEY_PASSWORD" default:""`
+	ValkeyURL          string `envconfig:"DRYCC_VALKEY_URL" default:"redis://127.0.0.1:6379"`
 	ValkeyStream       string `envconfig:"DRYCC_VALKEY_STREAM" default:"logs"`
 	ValkeyStreamGroup  string `envconfig:"DRYCC_VALKEY_STREAM_GROUP" default:"logger"`
 	StopTimeoutSeconds int    `envconfig:"AGGREGATOR_STOP_TIMEOUT_SEC" default:"1"`

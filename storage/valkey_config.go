@@ -11,8 +11,7 @@ const (
 )
 
 type valkeyConfig struct {
-	Addrs                  string `envconfig:"DRYCC_VALKEY_ADDRS" default:":6379"`
-	Password               string `envconfig:"DRYCC_VALKEY_PASSWORD" default:""`
+	URL                    string `envconfig:"DRYCC_VALKEY_URL" default:"redis://127.0.0.1:6379"`
 	PipelineLength         int    `envconfig:"DRYCC_VALKEY_PIPELINE_LENGTH" default:"50"`
 	PipelineTimeoutSeconds int    `envconfig:"DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS" default:"30"`
 	PipelineTimeout        time.Duration

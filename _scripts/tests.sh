@@ -16,7 +16,7 @@ function test-cover() {
   start-test-valkey
   VALKEY_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-valkey)
   podman run ${DEV_ENV_OPTS} \
-    -e DRYCC_VALKEY_ADDRS=${VALKEY_IP}:6379 \
+    -e DRYCC_VALKEY_URL=redis://${VALKEY_IP}:6379/0 \
     -it \
     ${DEV_ENV_IMAGE} \
     bash -c "test-cover.sh"
@@ -28,7 +28,7 @@ function test-unit() {
   VALKEY_IP=$(podman inspect --format "{{ .NetworkSettings.IPAddress }}" test-logger-valkey)
   echo "valkey ip: $VALKEY_IP"
   podman run ${DEV_ENV_OPTS} \
-    -e DRYCC_VALKEY_ADDRS=${VALKEY_IP}:6379 \
+    -e DRYCC_VALKEY_URL=redis://${VALKEY_IP}:6379/0 \
     -e DRYCC_VALKEY_PIPELINE_LENGTH=1 \
     -e DRYCC_VALKEY_PIPELINE_TIMEOUT_SECONDS=1 \
     -it \

@@ -3,13 +3,13 @@ package log
 import (
 	"context"
 	l "log"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/drycc/logger/storage"
-	valkey "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/valkey-io/valkey-go"
+	"github.com/valkey-io/valkey-go/valkeycompat"
 )
 
 func TestAggregator(t *testing.T) {
@@ -31,16 +31,13 @@ func generateTestData(ctx context.Context, count int, message map[string]interfa
 	if err != nil {
 		l.Fatalf("config error: %s: ", err)
 	}
-	valkeyAddrs := strings.Split(cfg.ValkeyAddrs, ",")
-	valkeyClient := valkey.NewClient(&valkey.Options{
-		Addr:     valkeyAddrs[0],
-		Password: cfg.ValkeyPassword,
-	})
+	valkeyClient, _ := valkey.NewClient(valkey.MustParseURL(cfg.ValkeyURL))
+	adapter := valkeycompat.NewAdapter(valkeyClient)
 	if err != nil {
 		l.Println(err)
 	}
 	for i := 0; i < count; i++ {
-		valkeyClient.XAdd(ctx, &valkey.XAddArgs{
+		adapter.XAdd(ctx, valkeycompat.XAddArgs{
 			Stream: cfg.ValkeyStream,
 			ID:     "*",
 			Values: message,

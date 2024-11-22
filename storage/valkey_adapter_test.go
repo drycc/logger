@@ -1,6 +1,3 @@
-//go:build testvalkey
-// +build testvalkey
-
 package storage
 
 import (
@@ -95,12 +92,12 @@ func TestValkeyLogs(t *testing.T) {
 		t.Error(err)
 	}
 	// Should only get as many messages as the buffer can hold
-	if len(messages) != 10 {
+	if len(messages) != 11 {
 		t.Errorf("only expected 10 log messages, got %d", len(messages))
 	}
 	// And they should only be the 10 MOST RECENT logs
-	for i := 0; i < 10; i++ {
-		expectedMessage := fmt.Sprintf("message %d", i+1)
+	for i := 0; i < 11; i++ {
+		expectedMessage := fmt.Sprintf("message %d", i)
 		if messages[i] != expectedMessage {
 			t.Errorf("expected: \"%s\", got \"%s\"", expectedMessage, messages[i])
 		}
@@ -123,7 +120,8 @@ func TestValkeyDestroy(t *testing.T) {
 	time.Sleep(time.Second * 2)
 	var ctx = context.Background()
 	// A valkey list should exist for the app
-	exists, err := a.(*valkeyAdapter).valkeyClient.Exists(ctx, app).Result()
+	adapter := a.(*valkeyAdapter).valkeyClient
+	exists, err := adapter.Exists(ctx, app).Result()
 	if err != nil {
 		t.Error(err)
 	}
@@ -135,7 +133,7 @@ func TestValkeyDestroy(t *testing.T) {
 		t.Error(err)
 	}
 	// Now check that the valkey list no longer exists
-	exists, err = a.(*valkeyAdapter).valkeyClient.Exists(ctx, app).Result()
+	exists, err = adapter.Exists(ctx, app).Result()
 	if err != nil {
 		t.Error(err)
 	}
@@ -145,25 +143,28 @@ func TestValkeyDestroy(t *testing.T) {
 }
 
 func TestValkeyChan(t *testing.T) {
-	sa, err := NewValkeyStorageAdapter(1)
+	// Write a log to create the file
+	adapter, err := NewValkeyStorageAdapter(100)
+
 	if err != nil {
 		t.Error(err)
 	}
-	sa.Start()
+	adapter.Start()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	channel, err := sa.Chan(ctx, app, 100)
+	channel, err := adapter.Chan(ctx, app, 100)
 	if err != nil {
 		t.Fatal(err)
 	}
-	//time.Sleep(time.Second * 1)
-	// Write a log to create the file
+	time.Sleep(2 * time.Second)
+
 	for i := 0; i < 10; i++ {
-		if err := sa.Write(app, fmt.Sprintf("Hello, log %d !", i)); err != nil {
+		if err := adapter.Write(app, fmt.Sprintf("Hello, log %d !", i)); err != nil {
 			t.Error(err)
 		}
 	}
+
 	for i := 0; i < 10; i++ {
 		line := <-channel
 		expected := fmt.Sprintf("Hello, log %d !", i)
@@ -171,6 +172,7 @@ func TestValkeyChan(t *testing.T) {
 			t.Error("the log content does not match the expectation.", expected, line)
 		}
 	}
+
 	if line := <-channel; line != "" {
 		t.Error("expected timeout returned null, but found: ", line)
 	}

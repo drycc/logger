@@ -3,12 +3,12 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
-	"sort"
-	"strings"
 	"time"
 
-	valkey "github.com/redis/go-redis/v9"
+	"container/list"
+
+	"github.com/valkey-io/valkey-go"
+	"github.com/valkey-io/valkey-go/valkeycompat"
 )
 
 type message struct {
@@ -16,94 +16,10 @@ type message struct {
 	messageBody string
 }
 
-func newMessage(app string, messageBody string) *message {
-	return &message{
-		app:         app,
-		messageBody: messageBody,
-	}
-}
-
-type messagePipeliner struct {
-	timeout       time.Duration
-	bufferSize    int
-	messageCount  int
-	pipeline      valkey.Pipeliner
-	timeoutTicker *time.Ticker
-	queuedApps    map[string]bool
-	errCh         chan error
-}
-
-func newMessagePipeliner(bufferSize int, valkeyClient *valkey.ClusterClient, timeout time.Duration, errCh chan error) *messagePipeliner {
-	return &messagePipeliner{
-		timeout:       timeout,
-		bufferSize:    bufferSize,
-		pipeline:      valkeyClient.Pipeline(),
-		timeoutTicker: time.NewTicker(timeout),
-		queuedApps:    map[string]bool{},
-		errCh:         errCh,
-	}
-}
-
-func (mp *messagePipeliner) addMessage(message *message) {
-	ctx, cancel := context.WithTimeout(context.Background(), mp.timeout)
-	defer cancel()
-	if err := mp.pipeline.Publish(ctx, message.app, message.messageBody).Err(); err != nil {
-		mp.errCh <- fmt.Errorf("error adding publish to %s to the pipeline: %s", message.app, err)
-	} else if err := mp.pipeline.RPush(ctx, message.app, message.messageBody).Err(); err != nil {
-		mp.errCh <- fmt.Errorf("error adding rpush to %s to the pipeline: %s", message.app, err)
-	} else {
-		mp.queuedApps[message.app] = true
-		mp.messageCount++
-	}
-}
-
-func (mp messagePipeliner) execPipeline() {
-	ctx, cancel := context.WithTimeout(context.Background(), mp.timeout)
-	defer cancel()
-	for app := range mp.queuedApps {
-		if err := mp.pipeline.LTrim(ctx, app, int64(-1*mp.bufferSize), -1).Err(); err != nil {
-			log.Printf("error adding ltrim of %s to the pipeline: %s", app, err)
-			mp.errCh <- fmt.Errorf("error adding ltrim of %s to the pipeline: %s", app, err)
-		}
-	}
-	if _, err := mp.pipeline.Exec(ctx); err != nil {
-		log.Printf("error executing pipeline: %s", err)
-		mp.errCh <- fmt.Errorf("error executing pipeline: %s", err)
-	}
-}
-
-func newClusterClient(cfg *valkeyConfig) (*valkey.ClusterClient, error) {
-	addrs := strings.Split(cfg.Addrs, ",")
-	sort.Strings(addrs)
-	return valkey.NewClusterClient(&valkey.ClusterOptions{
-		ClusterSlots: func(context.Context) ([]valkey.ClusterSlot, error) {
-			const slotsSize = 16383
-			var size = len(addrs)
-			var slotsRange = slotsSize / size
-			var slots []valkey.ClusterSlot
-			for index, addr := range addrs {
-				start := slotsRange * index
-				end := start + slotsRange
-				if (slotsSize - end) < slotsRange {
-					end = slotsSize
-				}
-				slots = append(slots, valkey.ClusterSlot{
-					Start: start,
-					End:   end,
-					Nodes: []valkey.ClusterNode{{Addr: addr}},
-				})
-			}
-			return slots, nil
-		},
-		Password:      cfg.Password, // "" == no password
-		RouteRandomly: true,
-	}), nil
-}
-
 type valkeyAdapter struct {
 	started        bool
 	bufferSize     int
-	valkeyClient   *valkey.ClusterClient
+	valkeyClient   valkeycompat.Cmdable
 	messageChannel chan *message
 	stopCh         chan struct{}
 	config         *valkeyConfig
@@ -118,13 +34,15 @@ func NewValkeyStorageAdapter(bufferSize int) (Adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := newClusterClient(cfg)
+
+	client, err := valkey.NewClient(valkey.MustParseURL(cfg.URL))
+
 	if err != nil {
 		return nil, err
 	}
 	rsa := &valkeyAdapter{
 		bufferSize:     bufferSize,
-		valkeyClient:   client,
+		valkeyClient:   valkeycompat.NewAdapter(client),
 		messageChannel: make(chan *message, bufferSize),
 		stopCh:         make(chan struct{}),
 		config:         cfg,
@@ -137,30 +55,51 @@ func NewValkeyStorageAdapter(bufferSize int) (Adapter, error) {
 func (a *valkeyAdapter) Start() {
 	if !a.started {
 		a.started = true
-		mp := newMessagePipeliner(a.bufferSize, a.valkeyClient, a.config.PipelineTimeout, make(chan error, a.bufferSize))
+		ticker := time.NewTicker(a.config.PipelineTimeout)
 		go func() {
+			messages := list.New()
 			for {
 				select {
-				case err := <-mp.errCh:
-					log.Printf("select pipeline message err: %v", err)
 				case <-a.stopCh:
+					a.execPublish(messages)
 					return
 				case message := <-a.messageChannel:
-					mp.addMessage(message)
-					if mp.messageCount == a.config.PipelineLength {
-						mp.execPipeline()
+					messages.PushBack(message)
+					if messages.Len() >= a.config.PipelineLength {
+						a.execPublish(messages)
 					}
-				case <-mp.timeoutTicker.C:
-					mp.execPipeline()
+				case <-ticker.C:
+					a.execPublish(messages)
 				}
 			}
 		}()
 	}
 }
 
+func (a *valkeyAdapter) execPublish(messages *list.List) {
+	ctx, cancel := context.WithTimeout(context.Background(), a.config.PipelineTimeout)
+	defer cancel()
+
+	a.valkeyClient.Pipelined(ctx, func(p valkeycompat.Pipeliner) error {
+		for element := messages.Front(); element != nil; element = element.Next() {
+			if message, ok := element.Value.(*message); ok {
+				p.LTrim(ctx, message.app, int64(-1*a.bufferSize), -1)
+				p.RPush(ctx, message.app, message.messageBody)
+				p.Publish(ctx, message.app, message.messageBody)
+			}
+		}
+		return nil
+	})
+
+	messages.Init()
+}
+
 // Write adds a log message to to an app-specific list in valkey using ring-buffer-like semantics
 func (a *valkeyAdapter) Write(app string, messageBody string) error {
-	a.messageChannel <- newMessage(app, messageBody)
+	a.messageChannel <- &message{
+		app:         app,
+		messageBody: messageBody,
+	}
 	return nil
 }
 
@@ -182,20 +121,22 @@ func (a *valkeyAdapter) Read(app string, lines int) ([]string, error) {
 // Make Chan a pipeline to read logs all the time
 func (a *valkeyAdapter) Chan(ctx context.Context, app string, size int) (chan string, error) {
 	channel := make(chan string, size)
+
 	go func() {
 		defer close(channel)
-		subscribe := a.valkeyClient.Subscribe(context.Background(), app)
-		defer subscribe.Close()
-		subscriptions := subscribe.Channel()
+		pubsub := a.valkeyClient.Subscribe(ctx, app)
+		defer pubsub.Close()
+		messages := pubsub.Channel()
 		for len(channel) != size {
 			select {
+			case message := <-messages:
+				channel <- message.Payload
 			case <-ctx.Done():
 				return
-			case message := <-subscriptions:
-				channel <- message.Payload
 			}
 		}
 	}()
+
 	return channel, nil
 }
 

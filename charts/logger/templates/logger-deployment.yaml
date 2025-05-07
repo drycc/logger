@@ -41,7 +41,7 @@ spec:
             secretKeyRef:
               name: logger-creds
               key: valkey-url
-        {{- else if eq .Values.global.valkeyLocation "on-cluster"  }}
+        {{- else if .Values.valkey.enabled }}
         - name: VALKEY_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -71,7 +71,7 @@ spec:
             secretKeyRef:
               name: logger-creds
               key: valkey-url
-        {{- else if eq .Values.global.valkeyLocation "on-cluster"  }}
+        {{- else if .Values.valkey.enabled }}
         - name: VALKEY_PASSWORD
           valueFrom:
             secretKeyRef:

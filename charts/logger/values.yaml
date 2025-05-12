@@ -2,8 +2,6 @@ imageOrg: "drycc"
 imagePullPolicy: "Always"
 imageTag: "canary"
 imageRegistry: "registry.drycc.cc"
-# limitsCpu: "100m"
-# limitsMemory: "50Mi"
 # Maximum lines of recent log file to display
 logsMaximumLines: 3000
 # Maximum timeout for follow logs
@@ -23,6 +21,14 @@ diagnosticMode:
   ##
   args:
     - infinity
+
+resources: {}
+  # limits:
+  #   cpu: 200m
+  #   memory: 50Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 30Mi
 
 nodeAffinityPreset:
   key: "drycc.cc/node"
